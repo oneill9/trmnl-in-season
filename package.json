@@ -1,0 +1,14 @@
+{
+  "name": "trmnl-in-season",
+  "version": "1.0.0",
+  "description": "TRMNL plugin showing locally harvested fruit and vegetables by country",
+  "scripts": {
+    "test": "jest --verbose --runInBand"
+  },
+  "keywords": ["trmnl", "seasonal", "fruit", "vegetables", "produce"],
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}
+

@@ -1,0 +1,61 @@
+<div class="layout layout--col layout--stretch ins-layout ins-layout--half-horizontal">
+  {% if has_data %}
+    <div class="ins-header flex flex--row flex--between flex--center-y gap--small">
+      <div class="ins-header__copy">
+        <div class="ins-eyebrow label label--xsmall">{{ guide_label | escape }}</div>
+        <div class="ins-heading title title--small">{{ month_name | escape }} <span class="ins-heading__place">in {{ country_short_name | escape }}</span></div>
+      </div>
+      <span class="label label--small label--inverted">{{ total_count }} in season</span>
+    </div>
+
+    {% if has_items %}
+      <div class="ins-board">
+      <section class="ins-section rounded--small flex flex--col">
+        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
+          <span class="ins-section__title label label--xsmall">Fruit</span>
+          <span class="ins-section__count label label--xsmall">{{ fruit_count }}</span>
+        </div>
+        <div class="ins-produce-list ins-produce-list--fruit p--1">
+          {% for produce in compact.half_horizontal.fruits.items %}
+            <div class="ins-produce label label--xsmall">{{ produce.name | escape }}</div>
+          {% endfor %}
+          {% if compact.half_horizontal.fruits.more_count > 0 %}
+            <div class="ins-more label label--xsmall">+{{ compact.half_horizontal.fruits.more_count }} more</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="ins-section rounded--small flex flex--col">
+        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
+          <span class="ins-section__title label label--xsmall">Vegetables</span>
+          <span class="ins-section__count label label--xsmall">{{ vegetable_count }}</span>
+        </div>
+        <div class="ins-produce-list ins-produce-list--vegetables p--1">
+          {% for produce in compact.half_horizontal.vegetables.items %}
+            <div class="ins-produce label label--xsmall">{{ produce.name | escape }}</div>
+          {% endfor %}
+          {% if compact.half_horizontal.vegetables.more_count > 0 %}
+            <div class="ins-more label label--xsmall">+{{ compact.half_horizontal.vegetables.more_count }} more</div>
+          {% endif %}
+        </div>
+      </section>
+      </div>
+    {% else %}
+      <div class="ins-quiet rounded flex flex--col flex--center text--center">
+        <div class="label label--small label--inverted">A quiet month</div>
+        <div class="title title--small">No common fresh harvests</div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="ins-empty rounded flex flex--col flex--center text--center">
+      <div class="label label--small label--inverted">Setup needed</div>
+      <div class="title title--large">Choose your country</div>
+      <div class="label label--small">{{ error_message | escape }}</div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">In Season</span>
+  <span class="instance">{% if has_data %}{{ country_short_name | escape }} · {{ month_name | escape }}{% else %}Country required{% endif %}</span>
+</div>

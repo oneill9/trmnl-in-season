@@ -1,0 +1,23 @@
+---
+strategy: static
+name: In Season
+description: National fruit and veg harvests.
+static_data: '{}'
+refresh_interval: 1440
+serverless_language: node
+framework_version: latest
+no_screen_padding: 'no'
+dark_mode: 'no'
+custom_fields:
+  - keyname: country
+    name: Country
+    field_type: select
+    description: Show produce being harvested domestically this month.
+    options:
+      - United Kingdom
+      - Ireland
+      - United States
+      - Canada
+      - Australia
+      - New Zealand
+

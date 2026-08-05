@@ -1,0 +1,60 @@
+<div class="layout layout--col layout--stretch ins-layout ins-layout--full">
+  {% if has_data %}
+    <div class="ins-header flex flex--row flex--between flex--center-y gap--medium">
+      <div class="ins-header__copy">
+        <div class="ins-eyebrow label label--small">Harvesting now · {{ guide_label | escape }}</div>
+        <div class="ins-heading title title--large">{{ month_name | escape }} <span class="ins-heading__place">in {{ country_name | escape }}</span></div>
+      </div>
+      <div class="ins-count flex flex--col flex--center text--center">
+        <div class="ins-count__number">{{ total_count }}</div>
+        <div class="ins-count__label">in season</div>
+      </div>
+    </div>
+
+    {% if has_items %}
+      <div class="ins-board">
+      <section class="ins-section rounded flex flex--col">
+        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
+          <span class="ins-section__title label label--small">Fruit</span>
+          <span class="ins-section__count label label--xsmall">{{ fruit_count }}</span>
+        </div>
+        <div class="ins-produce-list ins-produce-list--fruit p--1">
+          {% for produce in fruits %}
+            <div class="ins-produce label label--small">{{ produce.name | escape }}</div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="ins-section rounded flex flex--col">
+        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
+          <span class="ins-section__title label label--small">Vegetables</span>
+          <span class="ins-section__count label label--xsmall">{{ vegetable_count }}</span>
+        </div>
+        <div class="ins-produce-list ins-produce-list--vegetables p--1">
+          {% for produce in vegetables %}
+            <div class="ins-produce label label--small">{{ produce.name | escape }}</div>
+          {% endfor %}
+        </div>
+      </section>
+      </div>
+    {% else %}
+      <div class="ins-quiet rounded flex flex--col flex--center text--center">
+        <div class="label label--small label--inverted">A quiet month</div>
+        <div class="title title--large">No common fresh harvests</div>
+        <div class="label label--base">Nothing meets this national guide's conservative threshold in {{ month_name | escape }}.</div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="ins-empty rounded flex flex--col flex--center text--center">
+      <div class="ins-empty__mark flex flex--center">?</div>
+      <div class="label label--small label--inverted">Setup needed</div>
+      <div class="title title--large">Choose your country</div>
+      <div class="ins-empty__message label label--base">{{ error_message | escape }}</div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">In Season</span>
+  <span class="instance">{% if has_data %}{{ country_short_name | escape }} · {{ month_name | escape }}{% else %}Country required{% endif %}</span>
+</div>

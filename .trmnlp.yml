@@ -1,0 +1,15 @@
+---
+watch:
+  - .trmnlp.yml
+  - src
+
+custom_fields:
+  country: united_kingdom
+
+time_zone: Europe/London
+transform_runtime: enabled
+
+variables:
+  trmnl:
+    plugin_settings:
+      instance_name: In Season
