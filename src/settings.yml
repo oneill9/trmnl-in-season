@@ -4,13 +4,20 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: "{}"
 polling_verb:
-framework_version: latest
+framework_version: 3.2.0
 serverless_language: node
 polling_url:
 polling_headers:
 polling_body:
 id: 407471
 custom_fields:
+- keyname: about_in_season
+  name: About In Season
+  field_type: author_bio
+  description: See which fruit and vegetables are typically harvested this month in your country. Seasonal dates are national guides and may vary with local conditions.
+  category: nature,life
+  github_url: https://github.com/oneill9/trmnl-in-season
+  learn_more_url: https://oneill9.github.io/trmnl-in-season/
 - keyname: country
   name: Country
   field_type: select
@@ -23,5 +30,5 @@ custom_fields:
   - Australia
   - New Zealand
 name: In Season
-description: National fruit and veg harvests.
+description: Monthly fruit and veg by country.
 refresh_interval: 1440
