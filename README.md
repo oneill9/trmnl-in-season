@@ -34,16 +34,16 @@ Clone this repository and push it to a TRMNL account with the official [`trmnlp`
 ```sh
 git clone https://github.com/oneill9/trmnl-in-season.git
 cd trmnl-in-season
-gem install trmnl_preview
-trmnlp login
-trmnlp push
+bundle install
+bundle exec trmnlp login
+bundle exec trmnlp push
 ```
 
 The first push creates a private plugin and writes its TRMNL ID into `src/settings.yml`. Choose a country in the plugin settings, then add the instance to a device playlist.
 
 ## Continuous deployment
 
-The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and TRMNL lint checks on pull requests and pushes to `main`. After a successful `main` verification, it publishes the plugin with `trmnlp push --force`.
+The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and TRMNL lint checks on pull requests and pushes to `main`. After a successful `main` verification, it publishes the plugin with `trmnlp push --force`. GitHub Actions use immutable revisions, and `Gemfile.lock` pins the TRMNL tooling and its Ruby dependencies.
 
 The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static source guide from `docs/` when its content changes on `main`.
 
@@ -55,15 +55,16 @@ Install the JavaScript test dependency and run the checks:
 
 ```sh
 npm install
+bundle install
 npm test
-trmnlp lint
-trmnlp build --png
+bundle exec trmnlp lint
+bundle exec trmnlp build --png
 ```
 
 Start the live preview server with:
 
 ```sh
-trmnlp serve
+bundle exec trmnlp serve
 ```
 
 Then open `http://localhost:4567`. The local preview uses the country and timezone configured in `.trmnlp.yml`.
@@ -82,6 +83,8 @@ docker run --rm --pull always \
 ```text
 .
 ├── .trmnlp.yml
+├── Gemfile
+├── Gemfile.lock
 ├── .github/workflows
 │   ├── pages.yml
 │   └── trmnl.yml
