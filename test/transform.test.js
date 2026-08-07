@@ -1,6 +1,10 @@
 "use strict";
 
-const { COMPACT_LIMITS, run } = require("../src/transform");
+const {
+  CATEGORY_LIMITS,
+  FULL_SCREEN_LIMITS,
+  run,
+} = require("../src/transform");
 
 // Test data DSL
 
@@ -143,26 +147,68 @@ describe("TRMNL seasonality transform", () => {
     expect(aliasResult.country_code).toBe("united_kingdom");
   });
 
-  test("builds popularity-ranked compact lists with accurate remainders", () => {
+  test("builds a popularity-ranked full-screen shortlist with accurate remainders", () => {
     const result = new SeasonalityDriver().execute();
 
-    Object.entries(COMPACT_LIMITS).forEach(([layout, limits]) => {
-      const compact = result.compact[layout];
-      expect(compact.fruits.items.length).toBeLessThanOrEqual(limits.fruit);
-      expect(compact.vegetables.items.length).toBeLessThanOrEqual(
-        limits.vegetable
-      );
-      expect(compact.fruits.items.map((item) => item.popularity)).toEqual(
-        [...compact.fruits.items]
-          .map((item) => item.popularity)
-          .sort((first, second) => first - second)
-      );
-      expect(compact.fruits.items.length + compact.fruits.more_count).toBe(
-        result.fruit_count
-      );
-      expect(
-        compact.vegetables.items.length + compact.vegetables.more_count
-      ).toBe(result.vegetable_count);
+    expect(result.shortlist.fruits.items).toHaveLength(
+      FULL_SCREEN_LIMITS.fruit
+    );
+    expect(result.shortlist.vegetables.items).toHaveLength(
+      FULL_SCREEN_LIMITS.vegetable
+    );
+    [result.shortlist.fruits, result.shortlist.vegetables].forEach(
+      (category) => {
+        expect(category.items.map((item) => item.popularity)).toEqual(
+          [...category.items]
+            .map((item) => item.popularity)
+            .sort((first, second) => first - second)
+        );
+      }
+    );
+    expect(
+      result.shortlist.fruits.items.length + result.shortlist.fruits.more_count
+    ).toBe(result.fruit_count);
+    expect(
+      result.shortlist.vegetables.items.length +
+        result.shortlist.vegetables.more_count
+    ).toBe(result.vegetable_count);
+  });
+
+  test("builds abundance-ranked compact categories with two popular examples", () => {
+    const result = new SeasonalityDriver().execute();
+
+    expect(
+      result.compact.half_horizontal.fruits.categories.map(
+        (category) => category.name
+      )
+    ).toEqual(["Berries", "Stone fruit", "Orchard fruit"]);
+    expect(
+      names(result.compact.half_horizontal.fruits.categories[0].examples)
+    ).toEqual(["Strawberries", "Raspberries"]);
+
+    Object.entries(CATEGORY_LIMITS).forEach(([layout, limits]) => {
+      [
+        ["fruits", limits.fruit],
+        ["vegetables", limits.vegetable],
+      ].forEach(([categoryName, limit]) => {
+        const categorySummary = result.compact[layout][categoryName];
+        expect(categorySummary.categories.length).toBeLessThanOrEqual(limit);
+        expect(
+          categorySummary.categories.map((category) => category.item_count)
+        ).toEqual(
+          [...categorySummary.categories]
+            .map((category) => category.item_count)
+            .sort((first, second) => second - first)
+        );
+        categorySummary.categories.forEach((category) => {
+          expect(category.examples.length).toBeLessThanOrEqual(2);
+          expect(category.examples.map((item) => item.popularity)).toEqual(
+            [...category.examples]
+              .map((item) => item.popularity)
+              .sort((first, second) => first - second)
+          );
+        });
+      });
     });
   });
 

@@ -49,14 +49,11 @@
   }
 
   .ins-count__number {
-    font-size: 26px;
-    font-weight: 800;
-    line-height: 0.9;
+    font: 800 26px/0.9 Inter, sans-serif;
   }
 
   .ins-count__label {
-    font-size: 8px;
-    font-weight: 700;
+    font: 700 8px/1 Inter, sans-serif;
     letter-spacing: 0.9px;
     text-transform: uppercase;
   }
@@ -87,9 +84,8 @@
   .ins-section__title {
     min-width: 0;
     overflow: hidden;
-    font-weight: 800;
+    font: 800 16px/1 Inter, sans-serif;
     letter-spacing: 1.2px;
-    line-height: 1;
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
@@ -97,58 +93,80 @@
 
   .ins-section__count {
     flex: 0 0 auto;
-    font-weight: 700;
-    line-height: 1;
+    font: 700 13px/1 Inter, sans-serif;
   }
 
   .ins-produce-list {
     display: grid;
-    grid-auto-flow: row;
-    grid-auto-rows: minmax(0, 1fr);
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
-    gap: 1px 9px;
+    gap: 4px 12px;
   }
 
   .ins-produce-list--vegetables {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(18, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
     grid-auto-flow: column;
   }
 
   .ins-produce-list--fruit {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .ins-layout--full .ins-produce-list--fruit {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(12, minmax(0, 1fr));
-    grid-auto-flow: column;
+    grid-template-rows: repeat(8, minmax(0, 1fr));
   }
 
   .ins-produce {
+    display: flex;
+    align-items: center;
     min-width: 0;
     overflow: hidden;
-    font-weight: 600;
-    line-height: 1.12;
+    font: 650 22px/1.05 Inter, sans-serif;
+    letter-spacing: -0.25px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .ins-produce::before {
-    content: "○\00a0";
+    content: "•\00a0";
   }
 
-  .ins-more {
+  .ins-category-list {
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    gap: 3px;
+    padding: 5px 7px;
+  }
+
+  .ins-category {
+    display: flex;
+    flex-direction: column;
+    place-content: center;
     min-width: 0;
     overflow: hidden;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    line-height: 1.1;
+    border-bottom: 1px dotted #777;
+  }
+
+  .ins-category:last-child {
+    border-bottom: 0;
+  }
+
+  .ins-category__name,
+  .ins-category__examples {
+    min-width: 0;
+    overflow: hidden;
     text-overflow: ellipsis;
-    text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  .ins-category__name {
+    font: 800 18px/1.05 Inter, sans-serif;
+  }
+
+  .ins-category__examples {
+    font: 500 14px/1.1 Inter, sans-serif;
   }
 
   .ins-empty {
@@ -164,9 +182,7 @@
     height: 54px;
     border: 2px solid #000;
     border-radius: 50%;
-    font-size: 28px;
-    font-weight: 800;
-    line-height: 1;
+    font: 800 28px/1 Inter, sans-serif;
   }
 
   .ins-empty__message {
@@ -202,14 +218,42 @@
     gap: 7px;
   }
 
-  .ins-layout--half-horizontal .ins-produce-list {
-    gap: 0 7px;
+  .ins-layout--half-horizontal .ins-section__title,
+  .ins-layout--half-vertical .ins-section__title {
+    font: 800 14px/1 Inter, sans-serif;
   }
 
-  .ins-layout--half-horizontal .ins-produce-list--vegetables {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(5, minmax(0, 1fr));
-    grid-auto-flow: column;
+  .ins-layout--half-horizontal .ins-section__count,
+  .ins-layout--half-vertical .ins-section__count {
+    font: 700 11px/1 Inter, sans-serif;
+  }
+
+  .ins-layout--half-horizontal .ins-section__header {
+    padding: 3px 6px !important;
+  }
+
+  .ins-layout--half-horizontal .ins-category-list {
+    gap: 1px;
+    padding: 3px 7px;
+  }
+
+  .ins-layout--half-horizontal .ins-category {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .ins-layout--half-horizontal .ins-category__name {
+    flex: 0 0 auto;
+    font: 800 16px/1.05 Inter, sans-serif;
+  }
+
+  .ins-layout--half-horizontal .ins-category__name::after {
+    content: " ·";
+  }
+
+  .ins-layout--half-horizontal .ins-category__examples {
+    font: 500 13px/1.1 Inter, sans-serif;
   }
 
   .ins-layout--half-vertical .ins-board {
@@ -217,14 +261,11 @@
     gap: 7px;
   }
 
-  .ins-layout--half-vertical .ins-produce-list {
-    gap: 2px;
-  }
-
-  .ins-layout--half-vertical .ins-produce-list--vegetables {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: none;
-    grid-auto-flow: row;
+  .ins-layout--half-vertical .ins-category__name,
+  .ins-layout--half-vertical .ins-category__examples {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .ins-layout--quadrant .ins-heading {
@@ -241,17 +282,26 @@
   }
 
   .ins-layout--quadrant .ins-section__title {
+    font: 800 13px/1 Inter, sans-serif;
     letter-spacing: 0.8px;
   }
 
-  .ins-layout--quadrant .ins-produce-list {
-    gap: 0;
+  .ins-layout--quadrant .ins-section__count {
+    font: 700 9px/1 Inter, sans-serif;
   }
 
-  .ins-layout--quadrant .ins-produce-list--vegetables {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: none;
-    grid-auto-flow: row;
+  .ins-layout--quadrant .ins-category__name {
+    overflow: visible;
+    font: 800 14px/1.05 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .ins-layout--quadrant .ins-category__examples {
+    overflow: visible;
+    font: 500 11px/1.1 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
   }
 
 </style>

@@ -137,6 +137,136 @@ const PRODUCE = {
   watercress: { category: "vegetable", name: "Watercress" },
 };
 
+const CATEGORY_GROUPS = [
+  {
+    key: "berries",
+    name: "Berries",
+    category: "fruit",
+    items: [
+      "blackberry",
+      "blackcurrant",
+      "blueberry",
+      "cranberry",
+      "currant",
+      "gooseberry",
+      "raspberry",
+      "strawberry",
+    ],
+  },
+  {
+    key: "stone_fruit",
+    name: "Stone fruit",
+    category: "fruit",
+    items: ["apricot", "cherry", "damson", "nectarine", "peach", "plum"],
+  },
+  {
+    key: "orchard_fruit",
+    name: "Orchard fruit",
+    category: "fruit",
+    items: ["apple", "pear", "persimmon", "pomegranate"],
+  },
+  {
+    key: "citrus",
+    name: "Citrus",
+    category: "fruit",
+    items: ["grapefruit", "lemon", "lime", "mandarin", "orange"],
+  },
+  {
+    key: "tropical_fruit",
+    name: "Tropical fruit",
+    category: "fruit",
+    items: [
+      "avocado",
+      "banana",
+      "feijoa",
+      "guava",
+      "kiwifruit",
+      "lychee",
+      "mango",
+      "passionfruit",
+      "pineapple",
+      "tamarillo",
+    ],
+  },
+  {
+    key: "melons",
+    name: "Melons",
+    category: "fruit",
+    items: ["melon", "watermelon"],
+  },
+  {
+    key: "vines_and_figs",
+    name: "Vines & figs",
+    category: "fruit",
+    items: ["fig", "grape"],
+  },
+  {
+    key: "roots_and_tubers",
+    name: "Roots & tubers",
+    category: "vegetable",
+    items: [
+      "beetroot",
+      "carrot",
+      "celeriac",
+      "parsnip",
+      "potato",
+      "radish",
+      "swede",
+      "sweet_potato",
+      "turnip",
+    ],
+  },
+  {
+    key: "beans_and_peas",
+    name: "Beans & peas",
+    category: "vegetable",
+    items: ["broad_bean", "french_bean", "pea", "runner_bean"],
+  },
+  {
+    key: "brassicas",
+    name: "Brassicas",
+    category: "vegetable",
+    items: [
+      "broccoli",
+      "brussels_sprout",
+      "cabbage",
+      "cauliflower",
+      "kale",
+      "pak_choi",
+    ],
+  },
+  {
+    key: "leafy_greens",
+    name: "Leafy greens",
+    category: "vegetable",
+    items: ["chard", "lettuce", "spinach", "watercress"],
+  },
+  {
+    key: "alliums",
+    name: "Alliums",
+    category: "vegetable",
+    items: ["garlic", "leek", "onion", "spring_onion"],
+  },
+  {
+    key: "squashes_and_cucumbers",
+    name: "Squashes & cucumbers",
+    category: "vegetable",
+    items: ["courgette", "cucumber", "marrow", "pumpkin", "squash"],
+  },
+  {
+    key: "summer_vegetables",
+    name: "Summer vegetables",
+    category: "vegetable",
+    items: ["aubergine", "capsicum", "corn", "tomato"],
+  },
+  {
+    key: "stems_and_flowers",
+    name: "Stems & flowers",
+    category: "vegetable",
+    items: ["artichoke", "asparagus", "celery", "fennel"],
+  },
+];
+
 const SOURCES = {
   uk_rhs: {
     title: "Royal Horticultural Society harvest calendars",
@@ -587,10 +717,12 @@ const COUNTRIES = {
   }),
 };
 
-const COMPACT_LIMITS = {
-  half_horizontal: { fruit: 5, vegetable: 8 },
-  half_vertical: { fruit: 5, vegetable: 8 },
-  quadrant: { fruit: 3, vegetable: 4 },
+const FULL_SCREEN_LIMITS = { fruit: 8, vegetable: 12 };
+
+const CATEGORY_LIMITS = {
+  half_horizontal: { fruit: 3, vegetable: 4 },
+  half_vertical: { fruit: 3, vegetable: 4 },
+  quadrant: { fruit: 2, vegetable: 2 },
 };
 
 const COUNTRY_ALIASES = {
@@ -687,16 +819,61 @@ function compactCategory(items, limit) {
   };
 }
 
-function buildCompactLists(fruits, vegetables) {
+function summarizeCategories(items, limit) {
+  const categories = CATEGORY_GROUPS.map((group, index) => {
+    const groupItems = items
+      .filter((item) => group.items.includes(item.id))
+      .sort(compareByPopularity);
+
+    if (groupItems.length === 0) {
+      return null;
+    }
+
+    return {
+      key: group.key,
+      name: group.name,
+      item_count: groupItems.length,
+      examples: groupItems.slice(0, 2),
+      priority: groupItems[0].popularity,
+      group_order: index,
+    };
+  })
+    .filter(Boolean)
+    .sort(
+      (first, second) =>
+        second.item_count - first.item_count ||
+        first.priority - second.priority ||
+        first.group_order - second.group_order
+    );
+  const visibleCategories = categories.slice(0, limit).map((category) => {
+    const { group_order: _groupOrder, priority: _priority, ...visible } =
+      category;
+    return visible;
+  });
+
+  return {
+    categories: visibleCategories,
+    more_count: Math.max(0, categories.length - visibleCategories.length),
+  };
+}
+
+function buildCompactCategories(fruits, vegetables) {
   return Object.fromEntries(
-    Object.entries(COMPACT_LIMITS).map(([layout, limits]) => [
+    Object.entries(CATEGORY_LIMITS).map(([layout, limits]) => [
       layout,
       {
-        fruits: compactCategory(fruits, limits.fruit),
-        vegetables: compactCategory(vegetables, limits.vegetable),
+        fruits: summarizeCategories(fruits, limits.fruit),
+        vegetables: summarizeCategories(vegetables, limits.vegetable),
       },
     ])
   );
+}
+
+function buildFullScreenShortlist(fruits, vegetables) {
+  return {
+    fruits: compactCategory(fruits, FULL_SCREEN_LIMITS.fruit),
+    vegetables: compactCategory(vegetables, FULL_SCREEN_LIMITS.vegetable),
+  };
 }
 
 function emptyPayload({ now, countryCode = null, errorMessage }) {
@@ -717,7 +894,8 @@ function emptyPayload({ now, countryCode = null, errorMessage }) {
     total_count: 0,
     fruits: [],
     vegetables: [],
-    compact: buildCompactLists([], []),
+    shortlist: buildFullScreenShortlist([], []),
+    compact: buildCompactCategories([], []),
     error_message: errorMessage,
   };
 }
@@ -764,7 +942,8 @@ function transformSeasonality(input, now = () => new Date()) {
     total_count: currentItems.length,
     fruits,
     vegetables,
-    compact: buildCompactLists(fruits, vegetables),
+    shortlist: buildFullScreenShortlist(fruits, vegetables),
+    compact: buildCompactCategories(fruits, vegetables),
     error_message: null,
   };
 }
@@ -775,11 +954,14 @@ function run(input, dependencies = {}) {
 
 if (typeof module !== "undefined") {
   module.exports = {
-    COMPACT_LIMITS,
+    CATEGORY_GROUPS,
+    CATEGORY_LIMITS,
     COUNTRIES,
+    FULL_SCREEN_LIMITS,
     PRODUCE,
     SOURCES,
-    buildCompactLists,
+    buildCompactCategories,
+    buildFullScreenShortlist,
     dateParts,
     displayName,
     normalizeCountryCode,

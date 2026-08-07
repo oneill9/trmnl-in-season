@@ -15,24 +15,28 @@
       <div class="ins-board">
       <section class="ins-section rounded flex flex--col">
         <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
-          <span class="ins-section__title label label--small">Fruit</span>
-          <span class="ins-section__count label label--xsmall">{{ fruit_count }}</span>
+          <span class="ins-section__title">Fruit</span>
+          <span class="ins-section__count">
+            {% if shortlist.fruits.more_count > 0 %}8 shown · +{{ shortlist.fruits.more_count }} more{% else %}{{ fruit_count }} in season{% endif %}
+          </span>
         </div>
         <div class="ins-produce-list ins-produce-list--fruit p--1">
-          {% for produce in fruits %}
-            <div class="ins-produce label label--small">{{ produce.name | escape }}</div>
+          {% for produce in shortlist.fruits.items %}
+            <div class="ins-produce">{{ produce.name | escape }}</div>
           {% endfor %}
         </div>
       </section>
 
       <section class="ins-section rounded flex flex--col">
         <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
-          <span class="ins-section__title label label--small">Vegetables</span>
-          <span class="ins-section__count label label--xsmall">{{ vegetable_count }}</span>
+          <span class="ins-section__title">Vegetables</span>
+          <span class="ins-section__count">
+            {% if shortlist.vegetables.more_count > 0 %}12 shown · +{{ shortlist.vegetables.more_count }} more{% else %}{{ vegetable_count }} in season{% endif %}
+          </span>
         </div>
         <div class="ins-produce-list ins-produce-list--vegetables p--1">
-          {% for produce in vegetables %}
-            <div class="ins-produce label label--small">{{ produce.name | escape }}</div>
+          {% for produce in shortlist.vegetables.items %}
+            <div class="ins-produce">{{ produce.name | escape }}</div>
           {% endfor %}
         </div>
       </section>

@@ -1,6 +1,11 @@
 "use strict";
 
-const { COUNTRIES, PRODUCE, SOURCES } = require("../src/transform");
+const {
+  CATEGORY_GROUPS,
+  COUNTRIES,
+  PRODUCE,
+  SOURCES,
+} = require("../src/transform");
 
 describe("seasonal data contract", () => {
   test("supports the agreed country catalogue", () => {
@@ -61,5 +66,16 @@ describe("seasonal data contract", () => {
     expect(PRODUCE).not.toHaveProperty("mushroom");
     expect(PRODUCE).not.toHaveProperty("rhubarb");
   });
-});
 
+  test("assigns every produce item to exactly one matching display category", () => {
+    const groupedIds = CATEGORY_GROUPS.flatMap((group) => group.items);
+
+    expect(groupedIds.sort()).toEqual(Object.keys(PRODUCE).sort());
+    expect(new Set(groupedIds).size).toBe(groupedIds.length);
+    CATEGORY_GROUPS.forEach((group) => {
+      group.items.forEach((produceId) => {
+        expect(PRODUCE[produceId].category).toBe(group.category);
+      });
+    });
+  });
+});

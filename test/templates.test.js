@@ -29,31 +29,47 @@ describe("Liquid layout contract", () => {
     expect(markup).toMatch(/National harvest guide|guide_label/);
   });
 
-  test("full layout renders complete category lists", () => {
+  test("full layout renders readability-first shortlists and remainders", () => {
     const markup = template("full");
 
-    expect(markup).toContain("{% for produce in fruits %}");
-    expect(markup).toContain("{% for produce in vegetables %}");
-    expect(markup).not.toContain("compact.full");
+    expect(markup).toContain("{% for produce in shortlist.fruits.items %}");
+    expect(markup).toContain(
+      "{% for produce in shortlist.vegetables.items %}"
+    );
+    expect(markup).toContain("shortlist.fruits.more_count");
+    expect(markup).toContain("shortlist.vegetables.more_count");
   });
 
   test.each(["half_horizontal", "half_vertical", "quadrant"])(
-    "%s renders its popularity-ranked compact lists and remainder",
+    "%s renders category summaries with two examples and a remainder",
     (layout) => {
       const markup = template(layout);
 
-      expect(markup).toContain(`compact.${layout}.fruits.items`);
-      expect(markup).toContain(`compact.${layout}.vegetables.items`);
+      expect(markup).toContain(`compact.${layout}.fruits.categories`);
+      expect(markup).toContain(`compact.${layout}.vegetables.categories`);
+      expect(markup).toContain("{% for example in category.examples %}");
+      expect(markup).toContain("{{ category.name | escape }}");
+      expect(markup).toContain("{{ example.name | escape }}");
       expect(markup).toContain(`compact.${layout}.fruits.more_count`);
       expect(markup).toContain(`compact.${layout}.vegetables.more_count`);
     }
   );
 
-  test.each(LAYOUTS)("%s escapes dynamic text", (layout) => {
+  test.each(LAYOUTS)("%s escapes location and date text", (layout) => {
     const markup = template(layout);
 
-    expect(markup).toMatch(/produce\.name \| escape/);
     expect(markup).toMatch(/country_(?:short_)?name \| escape/);
     expect(markup).toMatch(/month_name \| escape/);
+  });
+
+  test("full layout escapes produce names", () => {
+    expect(template("full")).toMatch(/produce\.name \| escape/);
+  });
+
+  test("full-screen produce names use a legible 22px type size", () => {
+    const stylesheet = template("shared");
+    const produceRule = stylesheet.match(/\.ins-produce \{([^}]+)\}/)?.[1];
+
+    expect(produceRule).toMatch(/font: [^;]*22px/);
   });
 });
