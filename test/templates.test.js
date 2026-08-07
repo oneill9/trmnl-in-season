@@ -44,6 +44,14 @@ class FullScreenLayoutDriver {
     );
   }
 
+  botanicalHeaderCountWithEightPixelPadding() {
+    return (
+      this.markup.match(
+        /class="ins-section__header p--2 flex flex--center flex--center-y"/g
+      ) ?? []
+    ).length;
+  }
+
   hasSourceQrCode() {
     return this.markup.includes("{{ source_page_url | qr_code }}");
   }
@@ -68,6 +76,14 @@ class FullScreenLayoutDriver {
     const rule = this.stylesheet.match(/\.ins-section__art \{([^}]+)\}/)?.[1];
 
     return Number(rule?.match(/clip-path:\s*inset\(0\s+(\d+)px\)/)?.[1]);
+  }
+
+  botanicalArtVerticalOffset() {
+    const rule = this.stylesheet.match(
+      /\.ins-layout--full \.ins-section__art \{([^}]+)\}/
+    )?.[1];
+
+    return Number(rule?.match(/transform:\s*translateY\((\d+)px\)/)?.[1]);
   }
 
   hasBrandBeforeHeading() {
@@ -244,8 +260,10 @@ describe("Liquid layout contract", () => {
 
     expect(fullScreen.hasInlineBotanicalArt("fruit")).toBe(true);
     expect(fullScreen.hasInlineBotanicalArt("vegetables")).toBe(true);
+    expect(fullScreen.botanicalHeaderCountWithEightPixelPadding()).toBe(2);
     expect(fullScreen.hasSectionHeaderDivider()).toBe(false);
     expect(fullScreen.botanicalArtEdgeInset()).toBe(2);
+    expect(fullScreen.botanicalArtVerticalOffset()).toBe(8);
   });
 
   test("full-screen header uses a sprouting wordmark without a source QR or counts", () => {
