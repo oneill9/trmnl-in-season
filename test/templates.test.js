@@ -56,10 +56,11 @@ class FullScreenLayoutDriver {
     return this.markup.includes("{{ source_page_url | qr_code }}");
   }
 
-  hasSproutingWordmark() {
+  hasTextOnlyWordmark() {
     return (
-      this.markup.includes('class="ins-brand__mark"') &&
       this.markup.includes('<span class="ins-brand__name">In Season</span>') &&
+      !this.markup.includes('class="ins-brand__mark"') &&
+      !this.stylesheet.includes(".ins-brand__mark") &&
       !this.markup.includes("ins-wordmark__lead")
     );
   }
@@ -269,10 +270,10 @@ describe("Liquid layout contract", () => {
     expect(fullScreen.botanicalArtVerticalOffset()).toBe(8);
   });
 
-  test("full-screen header uses a sprouting wordmark without a source QR or counts", () => {
+  test("full-screen header uses a text-only wordmark without a source QR or counts", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
-    expect(fullScreen.hasSproutingWordmark()).toBe(true);
+    expect(fullScreen.hasTextOnlyWordmark()).toBe(true);
     expect(fullScreen.hasBrandBeforeHeading()).toBe(true);
     expect(fullScreen.hasSourceQrCode()).toBe(false);
     expect(fullScreen.hasSectionCounts()).toBe(false);
