@@ -240,11 +240,14 @@ describe("Liquid layout contract", () => {
     expect(template("full")).toMatch(/produce\.name \| escape/);
   });
 
-  test("full-screen produce names use a legible 22px type size", () => {
+  test("full-screen produce names use TRMNL's readable list typography", () => {
     const stylesheet = template("shared");
     const produceRule = stylesheet.match(/\.ins-produce \{([^}]+)\}/)?.[1];
 
-    expect(produceRule).toMatch(/font: [^;]*22px/);
+    expect(produceRule).toMatch(
+      /font: 500 21px\/1\.2 "Inter Variable", Inter, sans-serif/
+    );
+    expect(produceRule).not.toMatch(/letter-spacing/);
   });
 
   test("full-screen lists maximise readable content without bullets", () => {
