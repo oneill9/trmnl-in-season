@@ -717,7 +717,7 @@ const COUNTRIES = {
   }),
 };
 
-const FULL_SCREEN_LIMITS = { fruit: 14, vegetable: 24 };
+const FULL_SCREEN_LIMITS = { fruit: 24, vegetable: 36 };
 const SOURCE_PAGE_BASE_URL =
   "https://oneill9.github.io/trmnl-in-season/";
 

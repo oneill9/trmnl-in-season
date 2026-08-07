@@ -147,14 +147,14 @@ describe("TRMNL seasonality transform", () => {
     expect(aliasResult.country_code).toBe("united_kingdom");
   });
 
-  test("builds a popularity-ranked full-screen shortlist with accurate remainders", () => {
+  test("builds complete popularity-ranked full-screen lists", () => {
     const result = new SeasonalityDriver().execute();
 
     expect(result.shortlist.fruits.items).toHaveLength(
-      FULL_SCREEN_LIMITS.fruit
+      result.fruit_count
     );
     expect(result.shortlist.vegetables.items).toHaveLength(
-      FULL_SCREEN_LIMITS.vegetable
+      result.vegetable_count
     );
     [result.shortlist.fruits, result.shortlist.vegetables].forEach(
       (category) => {
@@ -165,13 +165,31 @@ describe("TRMNL seasonality transform", () => {
         );
       }
     );
-    expect(
-      result.shortlist.fruits.items.length + result.shortlist.fruits.more_count
-    ).toBe(result.fruit_count);
-    expect(
-      result.shortlist.vegetables.items.length +
-        result.shortlist.vegetables.more_count
-    ).toBe(result.vegetable_count);
+    expect(result.shortlist.fruits.more_count).toBe(0);
+    expect(result.shortlist.vegetables.more_count).toBe(0);
+  });
+
+  test.each([
+    "united_kingdom",
+    "ireland",
+    "united_states",
+    "canada",
+    "australia",
+    "new_zealand",
+  ])("full-screen capacity covers every month for %s", (country) => {
+    for (let month = 0; month < 12; month += 1) {
+      const result = new SeasonalityDriver()
+        .forCountry(country)
+        .at(new Date(Date.UTC(2026, month, 15, 12)).toISOString())
+        .execute();
+
+      expect(result.fruit_count).toBeLessThanOrEqual(
+        FULL_SCREEN_LIMITS.fruit
+      );
+      expect(result.vegetable_count).toBeLessThanOrEqual(
+        FULL_SCREEN_LIMITS.vegetable
+      );
+    }
   });
 
   test.each([

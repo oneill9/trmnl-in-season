@@ -28,27 +28,36 @@
 
   .ins-heading {
     overflow: hidden;
-    font-weight: 800;
+    font-weight: 400;
     letter-spacing: -1.2px;
-    line-height: 1;
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .ins-heading__place {
-    font-weight: 400;
+  .ins-layout--full .ins-heading {
+    font: 400 21px/1.2 Inter, sans-serif;
   }
 
-  .ins-source-qr {
+  .ins-heading__month {
+    font-weight: 800;
+  }
+
+  .ins-brand {
     flex: 0 0 auto;
-    width: 64px;
-    height: 64px;
-    overflow: hidden;
+    gap: 7px;
+    white-space: nowrap;
   }
 
-  .ins-source-qr .qr-code {
-    width: 60px;
-    height: 60px;
+  .ins-brand__mark {
+    display: block;
+    width: 28px;
+    height: 28px;
+  }
+
+  .ins-brand__name {
+    font: 650 21px/1 Inter, sans-serif;
+    letter-spacing: 0.8px;
   }
 
   .ins-board {
@@ -71,7 +80,6 @@
   .ins-section__header {
     flex: 0 0 auto;
     min-width: 0;
-    border-bottom: 1px solid #000;
   }
 
   .ins-section__art {
@@ -79,8 +87,14 @@
     width: auto;
     max-width: 58%;
     height: 44px;
+    clip-path: inset(0 2px);
     object-fit: contain;
     object-position: left center;
+  }
+
+  .ins-layout--full .ins-section__art {
+    max-width: 100%;
+    object-position: center;
   }
 
   .ins-section__title {
@@ -106,18 +120,23 @@
     gap: 4px 12px;
   }
 
+  .ins-layout--full .ins-produce-list {
+    padding-bottom: 8px !important;
+    row-gap: 2px;
+  }
+
   .ins-produce-list--vegetables {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-flow: column;
+    grid-auto-flow: row;
   }
 
   .ins-produce-list--fruit {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-flow: column;
+    grid-auto-flow: row;
   }
 
   .ins-layout--density-maximum .ins-produce-list {
-    grid-template-rows: repeat(8, minmax(0, 1fr));
+    grid-template-rows: repeat(12, minmax(0, 1fr));
   }
 
   .ins-produce {
