@@ -174,6 +174,24 @@ describe("TRMNL seasonality transform", () => {
     ).toBe(result.vegetable_count);
   });
 
+  test.each([
+    ["united_kingdom", "united-kingdom"],
+    ["ireland", "ireland"],
+    ["united_states", "united-states"],
+    ["canada", "canada"],
+    ["australia", "australia"],
+    ["new_zealand", "new-zealand"],
+  ])(
+    "links %s to its public source section",
+    (country, sourceSection) => {
+      const result = new SeasonalityDriver().forCountry(country).execute();
+
+      expect(result.source_page_url).toBe(
+        `https://oneill9.github.io/trmnl-in-season/#${sourceSection}`
+      );
+    }
+  );
+
   test("builds abundance-ranked compact categories with two popular examples", () => {
     const result = new SeasonalityDriver().execute();
 

@@ -11,12 +11,10 @@
   {% if has_data %}
     <div class="ins-header flex flex--row flex--between flex--center-y gap--medium">
       <div class="ins-header__copy">
-        <div class="ins-eyebrow label label--small">Harvesting now · {{ guide_label | escape }}</div>
-        <div class="ins-heading title title--large">{{ month_name | escape }} <span class="ins-heading__place">in {{ country_name | escape }}</span></div>
+        <div class="ins-heading title title--large">{{ month_name | escape }} <span class="ins-heading__place">{{ country_name | escape }}</span></div>
       </div>
-      <div class="ins-count flex flex--col flex--center text--center">
-        <div class="ins-count__number">{{ total_count }}</div>
-        <div class="ins-count__label">in season</div>
+      <div class="ins-source-qr flex flex--center">
+        {{ source_page_url | qr_code }}
       </div>
     </div>
 

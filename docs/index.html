@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sources and methodology for the TRMNL In Season produce guide.">
+    <title>In Season — Sources and methodology</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #171717;
+        --muted: #666;
+        --paper: #f7f5ef;
+        --card: #fff;
+        --line: #d8d4c9;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font: 17px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      a { color: inherit; text-underline-offset: 0.18em; }
+      a:hover { text-decoration-thickness: 2px; }
+
+      header,
+      main,
+      footer {
+        width: min(100% - 2rem, 760px);
+        margin-inline: auto;
+      }
+
+      header { padding: 4rem 0 2rem; }
+
+      .eyebrow {
+        margin: 0 0 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        letter-spacing: -0.035em;
+        line-height: 1.08;
+      }
+
+      h1 { font-size: clamp(2.5rem, 9vw, 4.75rem); }
+      h2 { font-size: clamp(1.65rem, 5vw, 2.2rem); }
+
+      .intro {
+        max-width: 62ch;
+        margin: 1.25rem 0 0;
+        color: var(--muted);
+        font-size: 1.08rem;
+      }
+
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1.75rem 0 0;
+      }
+
+      nav a {
+        padding: 0.35rem 0.7rem;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .method,
+      .country {
+        margin: 0 0 1rem;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        background: var(--card);
+        scroll-margin-top: 1rem;
+      }
+
+      .method { margin-bottom: 2rem; }
+      .method p:last-child,
+      .country ul:last-child { margin-bottom: 0; }
+
+      .country h2 { padding-right: 2rem; }
+
+      .country ul {
+        margin: 1rem 0;
+        padding-left: 1.25rem;
+      }
+
+      .country li + li { margin-top: 0.55rem; }
+      .note { color: var(--muted); }
+
+      footer {
+        padding: 2rem 0 4rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 520px) {
+        header { padding-top: 2.5rem; }
+        body { font-size: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">TRMNL produce guide</p>
+      <h1>In Season</h1>
+      <p class="intro">The evidence behind the monthly fruit and vegetable guide, with links to the public-sector and horticultural calendars used for each country.</p>
+      <nav aria-label="Country sources">
+        <a href="#united-kingdom">United Kingdom</a>
+        <a href="#ireland">Ireland</a>
+        <a href="#united-states">United States</a>
+        <a href="#canada">Canada</a>
+        <a href="#australia">Australia</a>
+        <a href="#new-zealand">New Zealand</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="method" aria-labelledby="method-title">
+        <h2 id="method-title">What “in season” means</h2>
+        <p>An item appears when it is commonly harvested domestically during the selected calendar month. Imports and produce available only from long-term storage, heated greenhouses, or other protected growing are excluded.</p>
+        <p>Government bodies, national horticultural organisations, and national produce boards are preferred. Where no sufficiently detailed national source exists, the guide keeps the conservative overlap between two reputable regional sources. Weather, latitude, altitude, cultivar, and farming method can shift real harvest dates by several weeks.</p>
+      </section>
+
+      <section class="country" id="united-kingdom">
+        <h2>United Kingdom</h2>
+        <ul>
+          <li><a href="https://www.rhs.org.uk/advice/grow-your-own">Royal Horticultural Society — Grow Your Own</a>, including its fruit gardening calendar, vegetable crop planner, and harvesting guidance.</li>
+          <li><a href="https://www.worcestershire.gov.uk/lets-waste-less/foodsavvy/how-eat-seasonally">Worcestershire County Council — How to eat seasonally</a>.</li>
+        </ul>
+      </section>
+
+      <section class="country" id="ireland">
+        <h2>Ireland</h2>
+        <ul>
+          <li><a href="https://www.bordbia.ie/whats-in-season/">Bord Bia — Best in Season calendar</a>.</li>
+        </ul>
+      </section>
+
+      <section class="country" id="united-states">
+        <h2>United States</h2>
+        <ul>
+          <li><a href="https://snaped.fns.usda.gov/resources/nutrition-education-materials/seasonal-produce-guide">USDA SNAP-Ed — Seasonal Produce Guide</a>.</li>
+        </ul>
+      </section>
+
+      <section class="country" id="canada">
+        <h2>Canada</h2>
+        <ul>
+          <li><a href="https://www.ontario.ca/foodland/page/availability-guide">Foodland Ontario — Availability guide</a>.</li>
+          <li><a href="https://buybc.gov.bc.ca/app/uploads/sites/386/2020/10/Seasonal-Chart.pdf">Buy BC — Seasonal chart</a>.</li>
+        </ul>
+        <p class="note">Only overlapping fresh-harvest periods are retained when the provincial calendars differ.</p>
+      </section>
+
+      <section class="country" id="australia">
+        <h2>Australia</h2>
+        <ul>
+          <li><a href="https://slhd.health.nsw.gov.au/yhunger/brainfood/seasonal-fruit-vegetable-guide">Sydney Local Health District — Seasonal Fruit and Vegetable Guide</a>.</li>
+          <li><a href="https://www.brisbane.qld.gov.au/about-council/your-brisbane/environment-and-sustainability/food-waste/buying-local-seasonal-fruit-and-vegetables">Brisbane City Council — Buying local, seasonal fruit and vegetables</a>.</li>
+        </ul>
+        <p class="note">The guide favours seasons shared by the temperate and subtropical sources.</p>
+      </section>
+
+      <section class="country" id="new-zealand">
+        <h2>New Zealand</h2>
+        <ul>
+          <li><a href="https://www.workandincome.govt.nz/work/find-jobs/where-to-look-for-jobs/seasonal-work-calendar.html">Work and Income New Zealand — Fruit and vegetable seasonal work calendar</a>.</li>
+          <li><a href="https://www.hortnz.co.nz/assets/Vegetables-co-nz/resources/SEASONABILITY-CHART-A3.pdf">Horticulture New Zealand — Vegetable seasonability chart</a>.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      Sources reviewed 5 August 2026. This is an approximate national guide, not a local crop forecast.
+    </footer>
+  </body>
+</html>

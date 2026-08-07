@@ -44,6 +44,14 @@ class FullScreenLayoutDriver {
     );
   }
 
+  hasSourceQrCode() {
+    return this.markup.includes("{{ source_page_url | qr_code }}");
+  }
+
+  hasLegacyHeaderCopy() {
+    return /Harvesting now|guide_label|>in {{ country_name/.test(this.markup);
+  }
+
 }
 
 describe("Liquid layout contract", () => {
@@ -55,7 +63,9 @@ describe("Liquid layout contract", () => {
     expect(markup).toContain("{% if has_items %}");
     expect(markup).toContain("No common fresh harvests");
     expect(markup).toContain('class="title_bar"');
-    expect(markup).toMatch(/National harvest guide|guide_label/);
+    if (layout !== "full") {
+      expect(markup).toMatch(/National harvest guide|guide_label/);
+    }
   });
 
   test("full layout renders the maximum readable shortlists and remainders", () => {
@@ -120,5 +130,12 @@ describe("Liquid layout contract", () => {
 
     expect(fullScreen.hasInlineBotanicalArt("fruit")).toBe(true);
     expect(fullScreen.hasInlineBotanicalArt("vegetables")).toBe(true);
+  });
+
+  test("full-screen header uses a source QR without explanatory copy", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasSourceQrCode()).toBe(true);
+    expect(fullScreen.hasLegacyHeaderCopy()).toBe(false);
   });
 });

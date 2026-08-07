@@ -718,6 +718,8 @@ const COUNTRIES = {
 };
 
 const FULL_SCREEN_LIMITS = { fruit: 14, vegetable: 24 };
+const SOURCE_PAGE_BASE_URL =
+  "https://oneill9.github.io/trmnl-in-season/";
 
 const CATEGORY_LIMITS = {
   half_horizontal: { fruit: 3, vegetable: 4 },
@@ -876,6 +878,11 @@ function buildFullScreenShortlist(fruits, vegetables) {
   };
 }
 
+function sourcePageUrl(countryCode) {
+  const sourceSection = countryCode.replaceAll("_", "-");
+  return `${SOURCE_PAGE_BASE_URL}#${sourceSection}`;
+}
+
 function emptyPayload({ now, countryCode = null, errorMessage }) {
   const currentDate = now();
   const { month, monthName } = dateParts(currentDate, "UTC");
@@ -886,6 +893,7 @@ function emptyPayload({ now, countryCode = null, errorMessage }) {
     country_name: null,
     country_short_name: null,
     guide_label: "National harvest guide",
+    source_page_url: null,
     month,
     month_name: monthName,
     updated_at: currentDate.toISOString(),
@@ -933,6 +941,7 @@ function transformSeasonality(input, now = () => new Date()) {
     country_name: country.name,
     country_short_name: country.short_name,
     guide_label: "National harvest guide",
+    source_page_url: sourcePageUrl(countryCode),
     month,
     month_name: monthName,
     time_zone: timeZone,
@@ -960,6 +969,7 @@ if (typeof module !== "undefined") {
     FULL_SCREEN_LIMITS,
     PRODUCE,
     SOURCES,
+    SOURCE_PAGE_BASE_URL,
     buildCompactCategories,
     buildFullScreenShortlist,
     dateParts,
@@ -967,6 +977,7 @@ if (typeof module !== "undefined") {
     normalizeCountryCode,
     run,
     selectedCountryCode,
+    sourcePageUrl,
     transformSeasonality,
   };
 }

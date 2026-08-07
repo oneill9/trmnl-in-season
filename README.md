@@ -11,9 +11,9 @@ A self-contained [TRMNL](https://usetrmnl.com/) plugin showing which fruit and v
 - Conservative national harvest guides with no imported, stored, or greenhouse-only availability
 - Full, half-horizontal, half-vertical, and quadrant layouts
 - 22px popularity-ranked full-screen shortlist showing up to 14 fruit and 24 vegetables
-- E-ink-friendly produce artwork
+- E-ink-friendly produce artwork and a country-specific source QR code
 - Abundance-ranked category summaries on compact layouts, with two familiar examples per category
-- No hosted service, API key, external runtime request, or user data storage
+- No runtime API key, external data request, or user data storage
 
 ## How it works
 
@@ -23,8 +23,9 @@ The plugin has a required Country dropdown and a bundled, versioned seasonality 
 2. Selects produce whose domestic harvest window includes the current calendar month.
 3. Applies the terminology familiar in that country, such as “aubergine,” “eggplant,” “courgette,” “zucchini,” “capsicum,” or “kūmara.”
 4. Produces a readable popularity-ranked shortlist for the full layout and seasonal category summaries for smaller layouts.
+5. Links the full-screen QR code to the selected country's evidence on the public source guide.
 
-The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See [Data Sources and Methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
+The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See the [public source guide](https://oneill9.github.io/trmnl-in-season/) or [Data Sources and Methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
 
 ## Install
 
@@ -43,6 +44,8 @@ The first push creates a private plugin and writes its TRMNL ID into `src/settin
 ## Continuous deployment
 
 The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and TRMNL lint checks on pull requests and pushes to `main`. After a successful `main` verification, it publishes the plugin with `trmnlp push --force`.
+
+The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static source guide from `docs/` when its content changes on `main`.
 
 Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update this private plugin instead of creating another one.
 
@@ -79,8 +82,12 @@ docker run --rm --pull always \
 ```text
 .
 ├── .trmnlp.yml
+├── .github/workflows
+│   ├── pages.yml
+│   └── trmnl.yml
 ├── docs
-│   └── DATA_SOURCES.md
+│   ├── DATA_SOURCES.md
+│   └── index.html
 ├── src
 │   ├── assets
 │   │   ├── fruit-botanical-flat.png
@@ -94,6 +101,7 @@ docker run --rm --pull always \
 │   └── quadrant.liquid
 └── test
     ├── data.test.js
+    ├── pages.test.js
     ├── transform.test.js
     └── templates.test.js
 ```
