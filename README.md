@@ -47,6 +47,8 @@ The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and 
 
 The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static source guide from `docs/` when its content changes on `main`.
 
+[Dependabot](.github/dependabot.yml) checks GitHub Actions, Bundler, and npm dependencies every Monday. Minor and patch releases are grouped by ecosystem, while major upgrades receive separate pull requests for review.
+
 Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update this private plugin instead of creating another one.
 
 ## Develop
@@ -85,9 +87,11 @@ docker run --rm --pull always \
 ├── .trmnlp.yml
 ├── Gemfile
 ├── Gemfile.lock
-├── .github/workflows
-│   ├── pages.yml
-│   └── trmnl.yml
+├── .github
+│   ├── dependabot.yml
+│   └── workflows
+│       ├── pages.yml
+│       └── trmnl.yml
 ├── docs
 │   ├── DATA_SOURCES.md
 │   └── index.html
@@ -104,9 +108,11 @@ docker run --rm --pull always \
 │   └── quadrant.liquid
 └── test
     ├── data.test.js
+    ├── dependabot.test.js
     ├── pages.test.js
+    ├── templates.test.js
     ├── transform.test.js
-    └── templates.test.js
+    └── workflow.test.js
 ```
 
 `src/transform.js` intentionally contains both the data and transform logic. TRMNL uploads a serverless transform as a single self-contained artifact, so the deployed plugin does not depend on auxiliary data files.
