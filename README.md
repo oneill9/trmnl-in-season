@@ -1,5 +1,7 @@
 # TRMNL In Season
 
+[![TRMNL](https://github.com/oneill9/trmnl-in-season/actions/workflows/trmnl.yml/badge.svg)](https://github.com/oneill9/trmnl-in-season/actions/workflows/trmnl.yml)
+
 A self-contained [TRMNL](https://usetrmnl.com/) plugin showing which fruit and vegetables are being harvested domestically this month. The only setting is the user's country.
 
 ## Features
