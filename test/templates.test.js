@@ -17,6 +17,35 @@ function template(name) {
   );
 }
 
+class FullScreenLayoutDriver {
+  constructor() {
+    this.markup = template("full");
+    this.stylesheet = template("shared");
+  }
+
+  columnCount(listName) {
+    const rule = this.stylesheet.match(
+      new RegExp(`\\.ins-produce-list--${listName} \\{([^}]+)\\}`)
+    )?.[1];
+    const columnDeclaration = rule?.match(
+      /grid-template-columns:\s*repeat\((\d+),/
+    );
+
+    return Number(columnDeclaration?.[1]);
+  }
+
+  hasProduceBullets() {
+    return /\.ins-produce::before/.test(this.stylesheet);
+  }
+
+  hasInlineBotanicalArt(sectionName) {
+    return this.markup.includes(
+      `class="ins-section__art ins-section__art--${sectionName}"`
+    );
+  }
+
+}
+
 describe("Liquid layout contract", () => {
   test.each(LAYOUTS)("%s renders data and setup states", (layout) => {
     const markup = template(layout);
@@ -29,15 +58,20 @@ describe("Liquid layout contract", () => {
     expect(markup).toMatch(/National harvest guide|guide_label/);
   });
 
-  test("full layout renders readability-first shortlists and remainders", () => {
+  test("full layout renders the maximum readable shortlists and remainders", () => {
     const markup = template("full");
 
-    expect(markup).toContain("{% for produce in shortlist.fruits.items %}");
-    expect(markup).toContain(
-      "{% for produce in shortlist.vegetables.items %}"
+    expect(markup).toContain("{% assign fruit_limit = 14 %}");
+    expect(markup).toContain("{% assign vegetable_limit = 24 %}");
+    expect(markup).not.toContain("preview_density");
+    expect(markup).toMatch(
+      /{% for produce in shortlist\.fruits\.items limit: fruit_limit %}/
     );
-    expect(markup).toContain("shortlist.fruits.more_count");
-    expect(markup).toContain("shortlist.vegetables.more_count");
+    expect(markup).toMatch(
+      /{% for produce in shortlist\.vegetables\.items limit: vegetable_limit %}/
+    );
+    expect(markup).toContain("fruit_more");
+    expect(markup).toContain("vegetable_more");
   });
 
   test.each(["half_horizontal", "half_vertical", "quadrant"])(
@@ -71,5 +105,20 @@ describe("Liquid layout contract", () => {
     const produceRule = stylesheet.match(/\.ins-produce \{([^}]+)\}/)?.[1];
 
     expect(produceRule).toMatch(/font: [^;]*22px/);
+  });
+
+  test("full-screen lists maximise readable content without bullets", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.columnCount("fruit")).toBe(2);
+    expect(fullScreen.columnCount("vegetables")).toBe(3);
+    expect(fullScreen.hasProduceBullets()).toBe(false);
+  });
+
+  test("full-screen section headings use botanical art", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasInlineBotanicalArt("fruit")).toBe(true);
+    expect(fullScreen.hasInlineBotanicalArt("vegetables")).toBe(true);
   });
 });

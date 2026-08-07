@@ -10,7 +10,8 @@ A self-contained [TRMNL](https://usetrmnl.com/) plugin showing which fruit and v
 - Separate fruit and vegetable lists using country-local terminology
 - Conservative national harvest guides with no imported, stored, or greenhouse-only availability
 - Full, half-horizontal, half-vertical, and quadrant layouts
-- Large-type, popularity-ranked full-screen shortlist with accurate remainder counts
+- 22px popularity-ranked full-screen shortlist showing up to 14 fruit and 24 vegetables
+- E-ink-friendly produce artwork
 - Abundance-ranked category summaries on compact layouts, with two familiar examples per category
 - No hosted service, API key, external runtime request, or user data storage
 
@@ -81,6 +82,9 @@ docker run --rm --pull always \
 ├── docs
 │   └── DATA_SOURCES.md
 ├── src
+│   ├── assets
+│   │   ├── fruit-botanical-flat.png
+│   │   └── vegetables-botanical-flat.png
 │   ├── settings.yml
 │   ├── transform.js
 │   ├── shared.liquid

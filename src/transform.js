@@ -717,7 +717,7 @@ const COUNTRIES = {
   }),
 };
 
-const FULL_SCREEN_LIMITS = { fruit: 8, vegetable: 12 };
+const FULL_SCREEN_LIMITS = { fruit: 14, vegetable: 24 };
 
 const CATEGORY_LIMITS = {
   half_horizontal: { fruit: 3, vegetable: 4 },
