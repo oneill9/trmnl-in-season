@@ -98,6 +98,7 @@ docker run --rm --pull always \
 ├── src
 │   ├── assets
 │   │   ├── fruit-botanical-flat.png
+│   │   ├── in-season-icon.png
 │   │   └── vegetables-botanical-flat.png
 │   ├── settings.yml
 │   ├── transform.js
