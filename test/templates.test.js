@@ -181,6 +181,60 @@ class FullScreenLayoutDriver {
 
 }
 
+class CompactLayoutDriver {
+  constructor(layout) {
+    this.layout = layout;
+    this.markup = template(layout);
+    this.stylesheet = template("shared");
+  }
+
+  literalCount(copy) {
+    return this.markup.split(copy).length - 1;
+  }
+
+  hasFooter() {
+    return this.markup.includes('class="title_bar"');
+  }
+
+  hasExplicitBoldMonth() {
+    return this.markup.includes(
+      '<span class="ins-heading__month">{{ month_name | escape }}</span>'
+    );
+  }
+
+  hasInlineBotanicalArt(sectionName) {
+    return this.markup.includes(
+      `class="ins-section__art ins-section__art--${sectionName}"`
+    );
+  }
+
+  hasTotalCounts() {
+    return /total_count|fruit_count|vegetable_count|\d+ items/.test(
+      this.markup
+    );
+  }
+
+  hasConditionalOverflowFor(sectionName) {
+    const path = `compact.${this.layout}.${sectionName}.more_count`;
+    const conditional = `{% if ${path} > 0 %}`;
+    const indicator = `+{{ ${path} }} groups`;
+
+    return (
+      this.markup.includes(conditional) &&
+      this.markup.includes(indicator) &&
+      !this.markup.includes(`${indicator}{% else %}`)
+    );
+  }
+
+  orientationRule() {
+    return this.stylesheet.match(
+      new RegExp(
+        `\\.ins-layout--${this.layout.replace("_", "-")} \\.ins-section__art \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
+}
+
 describe("Liquid layout contract", () => {
   test.each(LAYOUTS)("%s renders data and setup states", (layout) => {
     const markup = template(layout);
@@ -189,12 +243,12 @@ describe("Liquid layout contract", () => {
     expect(markup).toContain("Choose your country");
     expect(markup).toContain("{% if has_items %}");
     expect(markup).toContain("No common fresh harvests");
-    if (layout === "full") {
+    if (["full", "half_horizontal"].includes(layout)) {
       expect(markup).not.toContain('class="title_bar"');
     } else {
       expect(markup).toContain('class="title_bar"');
     }
-    if (layout !== "full") {
+    if (["half_vertical", "quadrant"].includes(layout)) {
       expect(markup).toMatch(/National harvest guide|guide_label/);
     }
   });
@@ -326,5 +380,34 @@ describe("Liquid layout contract", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
     expect(fullScreen.hasRepeatedFooterContext()).toBe(false);
+  });
+
+  test("half-horizontal adopts the full-screen header hierarchy", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.literalCount("In Season")).toBe(1);
+    expect(halfHorizontal.hasFooter()).toBe(false);
+    expect(halfHorizontal.hasExplicitBoldMonth()).toBe(true);
+    expect(halfHorizontal.markup).toContain(
+      '<span class="ins-brand__name">In Season</span>'
+    );
+    expect(halfHorizontal.markup).toMatch(/country_short_name \| escape/);
+  });
+
+  test("half-horizontal section headings use compact botanical art", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.hasInlineBotanicalArt("fruit")).toBe(true);
+    expect(halfHorizontal.hasInlineBotanicalArt("vegetables")).toBe(true);
+    expect(halfHorizontal.orientationRule()).toMatch(/height:\s*\d+px/);
+    expect(halfHorizontal.orientationRule()).toMatch(/max-width:\s*\d+%/);
+  });
+
+  test("half-horizontal shows only conditional group overflow counts", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.hasTotalCounts()).toBe(false);
+    expect(halfHorizontal.hasConditionalOverflowFor("fruits")).toBe(true);
+    expect(halfHorizontal.hasConditionalOverflowFor("vegetables")).toBe(true);
   });
 });
