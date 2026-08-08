@@ -267,13 +267,16 @@
   }
 
   .ins-layout--half-horizontal .ins-category-list {
-    gap: 1px;
+    align-content: start;
+    grid-auto-rows: max-content;
+    gap: 0;
     padding: 3px 7px;
   }
 
   .ins-layout--half-horizontal .ins-category {
     flex-direction: row;
     align-items: baseline;
+    border-bottom: 0;
     gap: 5px;
   }
 
@@ -321,6 +324,16 @@
     overflow: visible;
     text-overflow: clip;
     white-space: normal;
+  }
+
+  .ins-layout--half-vertical .ins-category-list {
+    align-content: start;
+    grid-auto-rows: max-content;
+    gap: 0;
+  }
+
+  .ins-layout--half-vertical .ins-category {
+    border-bottom: 0;
   }
 
   .ins-layout--quadrant .ins-heading {
