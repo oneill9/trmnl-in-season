@@ -263,6 +263,10 @@ class CompactLayoutDriver {
   hasCategorySeparators() {
     return !/border-bottom:\s*0/.test(this.categoryRule() ?? "");
   }
+
+  hasLeftAlignedCategoryRows() {
+    return /justify-content:\s*flex-start/.test(this.categoryRule() ?? "");
+  }
 }
 
 describe("Liquid layout contract", () => {
@@ -446,6 +450,7 @@ describe("Liquid layout contract", () => {
 
     expect(halfHorizontal.hasPackedCategoryRows()).toBe(true);
     expect(halfHorizontal.hasCategorySeparators()).toBe(false);
+    expect(halfHorizontal.hasLeftAlignedCategoryRows()).toBe(true);
   });
 
   test("half-vertical adopts the full-screen header hierarchy", () => {
