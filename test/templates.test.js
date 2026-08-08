@@ -243,12 +243,12 @@ describe("Liquid layout contract", () => {
     expect(markup).toContain("Choose your country");
     expect(markup).toContain("{% if has_items %}");
     expect(markup).toContain("No common fresh harvests");
-    if (["full", "half_horizontal"].includes(layout)) {
+    if (["full", "half_horizontal", "half_vertical"].includes(layout)) {
       expect(markup).not.toContain('class="title_bar"');
     } else {
       expect(markup).toContain('class="title_bar"');
     }
-    if (["half_vertical", "quadrant"].includes(layout)) {
+    if (layout === "quadrant") {
       expect(markup).toMatch(/National harvest guide|guide_label/);
     }
   });
@@ -409,5 +409,34 @@ describe("Liquid layout contract", () => {
     expect(halfHorizontal.hasTotalCounts()).toBe(false);
     expect(halfHorizontal.hasConditionalOverflowFor("fruits")).toBe(true);
     expect(halfHorizontal.hasConditionalOverflowFor("vegetables")).toBe(true);
+  });
+
+  test("half-vertical adopts the full-screen header hierarchy", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.literalCount("In Season")).toBe(1);
+    expect(halfVertical.hasFooter()).toBe(false);
+    expect(halfVertical.hasExplicitBoldMonth()).toBe(true);
+    expect(halfVertical.markup).toContain(
+      '<span class="ins-brand__name">In Season</span>'
+    );
+    expect(halfVertical.markup).toMatch(/country_short_name \| escape/);
+  });
+
+  test("half-vertical section headings use compact botanical art", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.hasInlineBotanicalArt("fruit")).toBe(true);
+    expect(halfVertical.hasInlineBotanicalArt("vegetables")).toBe(true);
+    expect(halfVertical.orientationRule()).toMatch(/height:\s*\d+px/);
+    expect(halfVertical.orientationRule()).toMatch(/max-width:\s*\d+%/);
+  });
+
+  test("half-vertical shows only conditional group overflow counts", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.hasTotalCounts()).toBe(false);
+    expect(halfVertical.hasConditionalOverflowFor("fruits")).toBe(true);
+    expect(halfVertical.hasConditionalOverflowFor("vegetables")).toBe(true);
   });
 });

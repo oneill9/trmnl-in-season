@@ -1,16 +1,20 @@
 <div class="layout layout--col layout--stretch ins-layout ins-layout--half-vertical">
   {% if has_data %}
-    <div class="ins-header">
-      <div class="ins-eyebrow label label--xsmall">{{ guide_label | escape }}</div>
-      <div class="ins-heading title title--small">{{ month_name | escape }} <span class="ins-heading__place">in {{ country_short_name | escape }}</span></div>
+    <div class="ins-header flex flex--row flex--between flex--center-y gap--small">
+      <div class="ins-brand flex flex--row flex--center-y">
+        <span class="ins-brand__name">In Season</span>
+      </div>
+      <div class="ins-header__copy">
+        <div class="ins-heading title title--small"><span class="ins-heading__month">{{ month_name | escape }}</span> <span class="ins-heading__place">{{ country_short_name | escape }}</span></div>
+      </div>
     </div>
 
     {% if has_items %}
       <div class="ins-board">
       <section class="ins-section rounded--small flex flex--col">
-        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
-          <span class="ins-section__title">Fruit</span>
-          <span class="ins-section__count">{% if compact.half_vertical.fruits.more_count > 0 %}+{{ compact.half_vertical.fruits.more_count }} groups{% else %}{{ fruit_count }} items{% endif %}</span>
+        <div class="ins-section__header p--1 flex flex--center flex--center-y">
+          <img class="ins-section__art ins-section__art--fruit" src="{{ ins_fruit_art }}" alt="Fruit">
+          {% if compact.half_vertical.fruits.more_count > 0 %}<span class="ins-section__count">+{{ compact.half_vertical.fruits.more_count }} groups</span>{% endif %}
         </div>
         <div class="ins-category-list">
           {% for category in compact.half_vertical.fruits.categories %}
@@ -23,9 +27,9 @@
       </section>
 
       <section class="ins-section rounded--small flex flex--col">
-        <div class="ins-section__header p--1 flex flex--row flex--between flex--center-y">
-          <span class="ins-section__title">Veg</span>
-          <span class="ins-section__count">{% if compact.half_vertical.vegetables.more_count > 0 %}+{{ compact.half_vertical.vegetables.more_count }} groups{% else %}{{ vegetable_count }} items{% endif %}</span>
+        <div class="ins-section__header p--1 flex flex--center flex--center-y">
+          <img class="ins-section__art ins-section__art--vegetables" src="{{ ins_vegetable_art }}" alt="Vegetables">
+          {% if compact.half_vertical.vegetables.more_count > 0 %}<span class="ins-section__count">+{{ compact.half_vertical.vegetables.more_count }} groups</span>{% endif %}
         </div>
         <div class="ins-category-list">
           {% for category in compact.half_vertical.vegetables.categories %}
@@ -51,9 +55,4 @@
       <div class="ins-empty__message label label--small">{{ error_message | escape }}</div>
     </div>
   {% endif %}
-</div>
-
-<div class="title_bar">
-  <span class="title">In Season</span>
-  <span class="instance">{% if has_data %}{{ total_count }} now{% else %}Country required{% endif %}</span>
 </div>
