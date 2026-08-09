@@ -217,7 +217,12 @@ describe("TRMNL seasonality transform", () => {
       result.compact.half_horizontal.fruits.categories.map(
         (category) => category.name
       )
-    ).toEqual(["Berries", "Stone fruit", "Orchard fruit"]);
+    ).toEqual([
+      "Berries",
+      "Stone Fruit",
+      "Orchard Fruit",
+      "Vines & Figs",
+    ]);
     expect(
       names(result.compact.half_horizontal.fruits.categories[0].examples)
     ).toEqual(["Strawberries", "Raspberries"]);
@@ -245,6 +250,17 @@ describe("TRMNL seasonality transform", () => {
           );
         });
       });
+    });
+  });
+
+  test("half-screen layouts use reclaimed space for higher category limits", () => {
+    expect(CATEGORY_LIMITS.half_horizontal).toEqual({
+      fruit: 7,
+      vegetable: 7,
+    });
+    expect(CATEGORY_LIMITS.half_vertical).toEqual({
+      fruit: 7,
+      vegetable: 8,
     });
   });
 

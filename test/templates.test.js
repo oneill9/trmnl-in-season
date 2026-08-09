@@ -233,6 +233,40 @@ class CompactLayoutDriver {
       )
     )?.[1];
   }
+
+  categoryListRule() {
+    return this.stylesheet.match(
+      new RegExp(
+        `\\.ins-layout--${this.layout.replace("_", "-")} \\.ins-category-list \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
+
+  categoryRule() {
+    return this.stylesheet.match(
+      new RegExp(
+        `\\.ins-layout--${this.layout.replace("_", "-")} \\.ins-category \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
+
+  hasPackedCategoryRows() {
+    const listRule = this.categoryListRule();
+
+    return (
+      /align-content:\s*start/.test(listRule ?? "") &&
+      /grid-auto-rows:\s*max-content/.test(listRule ?? "") &&
+      /gap:\s*0/.test(listRule ?? "")
+    );
+  }
+
+  hasCategorySeparators() {
+    return !/border-bottom:\s*0/.test(this.categoryRule() ?? "");
+  }
+
+  hasLeftAlignedCategoryRows() {
+    return /justify-content:\s*flex-start/.test(this.categoryRule() ?? "");
+  }
 }
 
 describe("Liquid layout contract", () => {
@@ -411,6 +445,14 @@ describe("Liquid layout contract", () => {
     expect(halfHorizontal.hasConditionalOverflowFor("vegetables")).toBe(true);
   });
 
+  test("half-horizontal packs category rows without separators", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.hasPackedCategoryRows()).toBe(true);
+    expect(halfHorizontal.hasCategorySeparators()).toBe(false);
+    expect(halfHorizontal.hasLeftAlignedCategoryRows()).toBe(true);
+  });
+
   test("half-vertical adopts the full-screen header hierarchy", () => {
     const halfVertical = new CompactLayoutDriver("half_vertical");
 
@@ -438,5 +480,12 @@ describe("Liquid layout contract", () => {
     expect(halfVertical.hasTotalCounts()).toBe(false);
     expect(halfVertical.hasConditionalOverflowFor("fruits")).toBe(true);
     expect(halfVertical.hasConditionalOverflowFor("vegetables")).toBe(true);
+  });
+
+  test("half-vertical packs category rows without separators", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.hasPackedCategoryRows()).toBe(true);
+    expect(halfVertical.hasCategorySeparators()).toBe(false);
   });
 });
