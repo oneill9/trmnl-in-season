@@ -255,7 +255,7 @@
 
   .ins-layout--half-horizontal .ins-section__art {
     max-width: 64%;
-    height: 30px;
+    height: 24px;
     object-position: center;
   }
 
@@ -267,31 +267,33 @@
   }
 
   .ins-layout--half-horizontal .ins-category-list {
-    align-content: start;
     grid-auto-rows: max-content;
     gap: 0;
-    padding: 3px 7px;
+    padding: 0 7px;
   }
 
   .ins-layout--half-horizontal .ins-category {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: flex-start;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--ins-category-lines);
     border-bottom: 0;
-    gap: 5px;
+    text-align: left;
   }
 
   .ins-layout--half-horizontal .ins-category__name {
-    flex: 0 0 auto;
-    font: 800 16px/1.05 Inter, sans-serif;
-  }
-
-  .ins-layout--half-horizontal .ins-category__name::after {
-    content: " \00B7";
+    display: inline;
+    overflow: visible;
+    font: 800 15px/1 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .ins-layout--half-horizontal .ins-category__examples {
-    font: 500 13px/1.1 Inter, sans-serif;
+    display: inline;
+    overflow: visible;
+    font: 500 12px/1.1 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .ins-layout--half-vertical .ins-board {

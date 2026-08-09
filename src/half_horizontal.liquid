@@ -18,7 +18,7 @@
         </div>
         <div class="ins-category-list">
           {% for category in compact.half_horizontal.fruits.categories %}
-            <div class="ins-category">
+            <div class="ins-category" style="--ins-category-lines: {{ category.line_limit }}">
               <div class="ins-category__name">{{ category.name | escape }}</div>
               <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>
@@ -33,7 +33,7 @@
         </div>
         <div class="ins-category-list">
           {% for category in compact.half_horizontal.vegetables.categories %}
-            <div class="ins-category">
+            <div class="ins-category" style="--ins-category-lines: {{ category.line_limit }}">
               <div class="ins-category__name">{{ category.name | escape }}</div>
               <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>

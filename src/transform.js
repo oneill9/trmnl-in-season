@@ -727,6 +727,22 @@ const CATEGORY_LIMITS = {
   quadrant: { fruit: 2, vegetable: 2 },
 };
 
+const CATEGORY_EXAMPLE_LIMITS = {
+  half_horizontal: Number.POSITIVE_INFINITY,
+  half_vertical: 2,
+  quadrant: 2,
+};
+
+const HALF_HORIZONTAL_LINE_BUDGET = {
+  fruit: 7,
+  vegetable: 7,
+};
+
+const HALF_HORIZONTAL_ITEMS_PER_LINE = {
+  fruit: 2,
+  vegetable: 4,
+};
+
 const COUNTRY_ALIASES = {
   uk: "united_kingdom",
   gb: "united_kingdom",
@@ -821,7 +837,7 @@ function compactCategory(items, limit) {
   };
 }
 
-function summarizeCategories(items, limit) {
+function summarizeCategories(items, limit, exampleLimit) {
   const categories = CATEGORY_GROUPS.map((group, index) => {
     const groupItems = items
       .filter((item) => group.items.includes(item.id))
@@ -835,7 +851,7 @@ function summarizeCategories(items, limit) {
       key: group.key,
       name: group.name,
       item_count: groupItems.length,
-      examples: groupItems.slice(0, 2),
+      examples: groupItems.slice(0, exampleLimit),
       priority: groupItems[0].popularity,
       group_order: index,
     };
@@ -859,15 +875,58 @@ function summarizeCategories(items, limit) {
   };
 }
 
+function allocateCategoryLines(summary, category) {
+  let remainingLines = Math.max(
+    0,
+    HALF_HORIZONTAL_LINE_BUDGET[category] - summary.categories.length
+  );
+  const categories = summary.categories.map((categorySummary) => {
+    const estimatedLines = Math.ceil(
+      categorySummary.item_count / HALF_HORIZONTAL_ITEMS_PER_LINE[category]
+    );
+    const extraLines = Math.min(
+      Math.max(0, estimatedLines - 1),
+      remainingLines
+    );
+    remainingLines -= extraLines;
+
+    return {
+      ...categorySummary,
+      line_limit: 1 + extraLines,
+    };
+  });
+
+  return { ...summary, categories };
+}
+
 function buildCompactCategories(fruits, vegetables) {
   return Object.fromEntries(
-    Object.entries(CATEGORY_LIMITS).map(([layout, limits]) => [
-      layout,
-      {
-        fruits: summarizeCategories(fruits, limits.fruit),
-        vegetables: summarizeCategories(vegetables, limits.vegetable),
-      },
-    ])
+    Object.entries(CATEGORY_LIMITS).map(([layout, limits]) => {
+      const fruitSummary = summarizeCategories(
+        fruits,
+        limits.fruit,
+        CATEGORY_EXAMPLE_LIMITS[layout]
+      );
+      const vegetableSummary = summarizeCategories(
+        vegetables,
+        limits.vegetable,
+        CATEGORY_EXAMPLE_LIMITS[layout]
+      );
+
+      return [
+        layout,
+        {
+          fruits:
+            layout === "half_horizontal"
+              ? allocateCategoryLines(fruitSummary, "fruit")
+              : fruitSummary,
+          vegetables:
+            layout === "half_horizontal"
+              ? allocateCategoryLines(vegetableSummary, "vegetable")
+              : vegetableSummary,
+        },
+      ];
+    })
   );
 }
 

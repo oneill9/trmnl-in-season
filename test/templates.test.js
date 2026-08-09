@@ -250,6 +250,14 @@ class CompactLayoutDriver {
     )?.[1];
   }
 
+  categoryTextRule(part) {
+    return this.stylesheet.match(
+      new RegExp(
+        `\\.ins-layout--${this.layout.replace("_", "-")} \\.ins-category__${part} \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
+
   hasPackedCategoryRows() {
     const listRule = this.categoryListRule();
 
@@ -260,12 +268,47 @@ class CompactLayoutDriver {
     );
   }
 
+  hasWholeLineCategoryRows() {
+    const listRule = this.categoryListRule();
+    const categoryRule = this.categoryRule();
+
+    return (
+      /grid-auto-rows:\s*max-content/.test(listRule ?? "") &&
+      /-webkit-box-orient:\s*vertical/.test(categoryRule ?? "") &&
+      /-webkit-line-clamp:\s*var\(--ins-category-lines\)/.test(
+        categoryRule ?? ""
+      )
+    );
+  }
+
+  hasCategoryLineBudgetMarkup() {
+    return this.markup.includes(
+      "--ins-category-lines: {{ category.line_limit }}"
+    );
+  }
+
   hasCategorySeparators() {
     return !/border-bottom:\s*0/.test(this.categoryRule() ?? "");
   }
 
   hasLeftAlignedCategoryRows() {
-    return /justify-content:\s*flex-start/.test(this.categoryRule() ?? "");
+    return /text-align:\s*left/.test(this.categoryRule() ?? "");
+  }
+
+  hasFlowingCategoryText() {
+    const categoryRule = this.categoryRule();
+    const nameRule = this.categoryTextRule("name");
+    const examplesRule = this.categoryTextRule("examples");
+
+    return (
+      /display:\s*(?:block|-webkit-box)/.test(categoryRule ?? "") &&
+      [nameRule, examplesRule].every(
+        (rule) =>
+          /display:\s*inline/.test(rule ?? "") &&
+          /overflow:\s*visible/.test(rule ?? "") &&
+          /white-space:\s*normal/.test(rule ?? "")
+      )
+    );
   }
 }
 
@@ -445,12 +488,19 @@ describe("Liquid layout contract", () => {
     expect(halfHorizontal.hasConditionalOverflowFor("vegetables")).toBe(true);
   });
 
-  test("half-horizontal packs category rows without separators", () => {
+  test("half-horizontal allocates only complete lines to category rows", () => {
     const halfHorizontal = new CompactLayoutDriver("half_horizontal");
 
-    expect(halfHorizontal.hasPackedCategoryRows()).toBe(true);
+    expect(halfHorizontal.hasWholeLineCategoryRows()).toBe(true);
+    expect(halfHorizontal.hasCategoryLineBudgetMarkup()).toBe(true);
     expect(halfHorizontal.hasCategorySeparators()).toBe(false);
     expect(halfHorizontal.hasLeftAlignedCategoryRows()).toBe(true);
+  });
+
+  test("half-horizontal flows additional produce onto available lines", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.hasFlowingCategoryText()).toBe(true);
   });
 
   test("half-vertical adopts the full-screen header hierarchy", () => {
