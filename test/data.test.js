@@ -78,4 +78,17 @@ describe("seasonal data contract", () => {
       });
     });
   });
+
+  test("uses title case for every display category name", () => {
+    CATEGORY_GROUPS.forEach((group) => {
+      const titleCasedName = group.name
+        .split(" ")
+        .map((word) =>
+          word === "&" ? word : `${word.charAt(0).toUpperCase()}${word.slice(1)}`
+        )
+        .join(" ");
+
+      expect(group.name).toBe(titleCasedName);
+    });
+  });
 });

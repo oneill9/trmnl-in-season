@@ -219,9 +219,9 @@ describe("TRMNL seasonality transform", () => {
       )
     ).toEqual([
       "Berries",
-      "Stone fruit",
-      "Orchard fruit",
-      "Vines & figs",
+      "Stone Fruit",
+      "Orchard Fruit",
+      "Vines & Figs",
     ]);
     expect(
       names(result.compact.half_horizontal.fruits.categories[0].examples)

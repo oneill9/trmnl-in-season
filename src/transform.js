@@ -155,13 +155,13 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "stone_fruit",
-    name: "Stone fruit",
+    name: "Stone Fruit",
     category: "fruit",
     items: ["apricot", "cherry", "damson", "nectarine", "peach", "plum"],
   },
   {
     key: "orchard_fruit",
-    name: "Orchard fruit",
+    name: "Orchard Fruit",
     category: "fruit",
     items: ["apple", "pear", "persimmon", "pomegranate"],
   },
@@ -173,7 +173,7 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "tropical_fruit",
-    name: "Tropical fruit",
+    name: "Tropical Fruit",
     category: "fruit",
     items: [
       "avocado",
@@ -196,13 +196,13 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "vines_and_figs",
-    name: "Vines & figs",
+    name: "Vines & Figs",
     category: "fruit",
     items: ["fig", "grape"],
   },
   {
     key: "roots_and_tubers",
-    name: "Roots & tubers",
+    name: "Roots & Tubers",
     category: "vegetable",
     items: [
       "beetroot",
@@ -218,7 +218,7 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "beans_and_peas",
-    name: "Beans & peas",
+    name: "Beans & Peas",
     category: "vegetable",
     items: ["broad_bean", "french_bean", "pea", "runner_bean"],
   },
@@ -237,7 +237,7 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "leafy_greens",
-    name: "Leafy greens",
+    name: "Leafy Greens",
     category: "vegetable",
     items: ["chard", "lettuce", "spinach", "watercress"],
   },
@@ -249,19 +249,19 @@ const CATEGORY_GROUPS = [
   },
   {
     key: "squashes_and_cucumbers",
-    name: "Squashes & cucumbers",
+    name: "Squashes & Cucumbers",
     category: "vegetable",
     items: ["courgette", "cucumber", "marrow", "pumpkin", "squash"],
   },
   {
     key: "summer_vegetables",
-    name: "Summer vegetables",
+    name: "Summer Vegetables",
     category: "vegetable",
     items: ["aubergine", "capsicum", "corn", "tomato"],
   },
   {
     key: "stems_and_flowers",
-    name: "Stems & flowers",
+    name: "Stems & Flowers",
     category: "vegetable",
     items: ["artichoke", "asparagus", "celery", "fennel"],
   },
