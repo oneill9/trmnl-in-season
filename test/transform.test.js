@@ -210,7 +210,7 @@ describe("TRMNL seasonality transform", () => {
     }
   );
 
-  test("builds abundance-ranked compact categories with two popular examples", () => {
+  test("builds abundance-ranked compact categories", () => {
     const result = new SeasonalityDriver().execute();
 
     expect(
@@ -225,7 +225,24 @@ describe("TRMNL seasonality transform", () => {
     ]);
     expect(
       names(result.compact.half_horizontal.fruits.categories[0].examples)
-    ).toEqual(["Strawberries", "Raspberries"]);
+    ).toEqual([
+      "Strawberries",
+      "Raspberries",
+      "Blackberries",
+      "Blueberries",
+      "Blackcurrants",
+      "Gooseberries",
+    ]);
+    expect(
+      result.compact.half_horizontal.fruits.categories.map(
+        (category) => category.line_limit
+      )
+    ).toEqual([3, 2, 1, 1]);
+    expect(
+      result.compact.half_horizontal.vegetables.categories.map(
+        (category) => category.line_limit
+      )
+    ).toEqual([1, 1, 1, 1, 1, 1, 1]);
 
     Object.entries(CATEGORY_LIMITS).forEach(([layout, limits]) => {
       [
@@ -242,7 +259,11 @@ describe("TRMNL seasonality transform", () => {
             .sort((first, second) => second - first)
         );
         categorySummary.categories.forEach((category) => {
-          expect(category.examples.length).toBeLessThanOrEqual(2);
+          if (layout === "half_horizontal") {
+            expect(category.examples).toHaveLength(category.item_count);
+          } else {
+            expect(category.examples.length).toBeLessThanOrEqual(2);
+          }
           expect(category.examples.map((item) => item.popularity)).toEqual(
             [...category.examples]
               .map((item) => item.popularity)
@@ -252,6 +273,37 @@ describe("TRMNL seasonality transform", () => {
       });
     });
   });
+
+  test.each([
+    ["united_kingdom", "2026-09-15T12:00:00.000Z"],
+    ["australia", "2026-02-15T12:00:00.000Z"],
+  ])(
+    "half-horizontal exposes every item in dense %s category rows",
+    (country, date) => {
+      const result = new SeasonalityDriver()
+        .forCountry(country)
+        .at(date)
+        .execute();
+
+      ["fruits", "vegetables"].forEach((categoryName) => {
+        const categories =
+          result.compact.half_horizontal[categoryName].categories;
+
+        expect(
+          categories.reduce(
+            (lineCount, category) => lineCount + category.line_limit,
+            0
+          )
+        ).toBeLessThanOrEqual(7);
+        categories.forEach(
+          (category) => {
+            expect(category.examples).toHaveLength(category.item_count);
+            expect(category.line_limit).toBeGreaterThanOrEqual(1);
+          }
+        );
+      });
+    }
+  );
 
   test("half-screen layouts use reclaimed space for higher category limits", () => {
     expect(CATEGORY_LIMITS.half_horizontal).toEqual({
