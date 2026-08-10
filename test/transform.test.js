@@ -316,6 +316,13 @@ describe("TRMNL seasonality transform", () => {
     });
   });
 
+  test("quadrant uses reclaimed space for four category groups per panel", () => {
+    expect(CATEGORY_LIMITS.quadrant).toEqual({
+      fruit: 4,
+      vegetable: 4,
+    });
+  });
+
   test("returns an explicit state when country is missing", () => {
     const result = new SeasonalityDriver().withoutCountry().execute();
 

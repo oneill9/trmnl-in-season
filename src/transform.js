@@ -724,7 +724,7 @@ const SOURCE_PAGE_BASE_URL =
 const CATEGORY_LIMITS = {
   half_horizontal: { fruit: 7, vegetable: 7 },
   half_vertical: { fruit: 7, vegetable: 8 },
-  quadrant: { fruit: 2, vegetable: 2 },
+  quadrant: { fruit: 4, vegetable: 4 },
 };
 
 const CATEGORY_EXAMPLE_LIMITS = {

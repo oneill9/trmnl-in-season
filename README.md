@@ -71,10 +71,10 @@ bundle exec trmnlp build --png
 Start the live preview server with:
 
 ```sh
-bundle exec trmnlp serve
+./scripts/start-server.sh
 ```
 
-Then open `http://localhost:4567`. The local preview uses the country and timezone configured in `.trmnlp.yml`.
+The launcher installs the locked Ruby dependencies when needed, waits for the server, and opens `http://localhost:4567` in the default macOS browser. The local preview uses the country and timezone configured in `.trmnlp.yml`.
 
 If Ruby is not installed, use TRMNL's container:
 

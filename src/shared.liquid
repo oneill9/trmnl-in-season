@@ -197,7 +197,6 @@
     width: 54px;
     height: 54px;
     border: 2px solid #000;
-    border-radius: 50%;
     font: 800 28px/1 Inter, sans-serif;
   }
 
@@ -352,13 +351,37 @@
     gap: 5px;
   }
 
+  .ins-layout--quadrant .ins-section__header {
+    position: relative;
+  }
+
+  .ins-layout--quadrant .ins-section__art {
+    max-width: 60%;
+    height: 28px;
+    object-position: center;
+  }
+
   .ins-layout--quadrant .ins-section__title {
     font: 800 13px/1 Inter, sans-serif;
     letter-spacing: 0.8px;
   }
 
   .ins-layout--quadrant .ins-section__count {
+    position: absolute;
+    right: 4px;
+    bottom: 2px;
+    background: #fff;
     font: 700 9px/1 Inter, sans-serif;
+  }
+
+  .ins-layout--quadrant .ins-category-list {
+    align-content: start;
+    grid-auto-rows: max-content;
+    gap: 0;
+  }
+
+  .ins-layout--quadrant .ins-category {
+    border-bottom: 0;
   }
 
   .ins-layout--quadrant .ins-category__name {

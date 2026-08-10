@@ -320,14 +320,8 @@ describe("Liquid layout contract", () => {
     expect(markup).toContain("Choose your country");
     expect(markup).toContain("{% if has_items %}");
     expect(markup).toContain("No common fresh harvests");
-    if (["full", "half_horizontal", "half_vertical"].includes(layout)) {
-      expect(markup).not.toContain('class="title_bar"');
-    } else {
-      expect(markup).toContain('class="title_bar"');
-    }
-    if (layout === "quadrant") {
-      expect(markup).toMatch(/National harvest guide|guide_label/);
-    }
+    expect(markup).not.toContain('class="title_bar"');
+    expect(markup).not.toMatch(/National harvest guide|guide_label/);
   });
 
   test("full layout renders complete readable produce lists", () => {
@@ -537,5 +531,41 @@ describe("Liquid layout contract", () => {
 
     expect(halfVertical.hasPackedCategoryRows()).toBe(true);
     expect(halfVertical.hasCategorySeparators()).toBe(false);
+  });
+
+  test("quadrant adopts the shared compact header hierarchy", () => {
+    const quadrant = new CompactLayoutDriver("quadrant");
+
+    expect(quadrant.literalCount("In Season")).toBe(1);
+    expect(quadrant.hasFooter()).toBe(false);
+    expect(quadrant.hasExplicitBoldMonth()).toBe(true);
+    expect(quadrant.markup).toContain(
+      '<span class="ins-brand__name">In Season</span>'
+    );
+    expect(quadrant.markup).toMatch(/country_short_name \| escape/);
+  });
+
+  test("quadrant section headings use compact botanical art", () => {
+    const quadrant = new CompactLayoutDriver("quadrant");
+
+    expect(quadrant.hasInlineBotanicalArt("fruit")).toBe(true);
+    expect(quadrant.hasInlineBotanicalArt("vegetables")).toBe(true);
+    expect(quadrant.orientationRule()).toMatch(/height:\s*\d+px/);
+    expect(quadrant.orientationRule()).toMatch(/max-width:\s*\d+%/);
+  });
+
+  test("quadrant shows only conditional group overflow counts", () => {
+    const quadrant = new CompactLayoutDriver("quadrant");
+
+    expect(quadrant.hasTotalCounts()).toBe(false);
+    expect(quadrant.hasConditionalOverflowFor("fruits")).toBe(true);
+    expect(quadrant.hasConditionalOverflowFor("vegetables")).toBe(true);
+  });
+
+  test("quadrant packs category rows without separators", () => {
+    const quadrant = new CompactLayoutDriver("quadrant");
+
+    expect(quadrant.hasPackedCategoryRows()).toBe(true);
+    expect(quadrant.hasCategorySeparators()).toBe(false);
   });
 });
