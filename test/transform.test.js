@@ -147,7 +147,7 @@ describe("TRMNL seasonality transform", () => {
     expect(aliasResult.country_code).toBe("united_kingdom");
   });
 
-  test("builds complete popularity-ranked full-screen lists", () => {
+  test("builds complete abundance-ranked full-screen categories", () => {
     const result = new SeasonalityDriver().execute();
 
     expect(result.shortlist.fruits.items).toHaveLength(
@@ -163,10 +163,48 @@ describe("TRMNL seasonality transform", () => {
             .map((item) => item.popularity)
             .sort((first, second) => first - second)
         );
+        expect(category.categories.map((group) => group.item_count)).toEqual(
+          [...category.categories]
+            .map((group) => group.item_count)
+            .sort((first, second) => second - first)
+        );
+        expect(
+          category.categories
+            .flatMap((group) => group.examples.map((item) => item.id))
+            .sort()
+        ).toEqual(category.items.map((item) => item.id).sort());
       }
     );
     expect(result.shortlist.fruits.more_count).toBe(0);
     expect(result.shortlist.vegetables.more_count).toBe(0);
+  });
+
+  test.each([
+    ["2026-01-15T12:00:00.000Z", "fruit-empty"],
+    ["2026-05-15T12:00:00.000Z", "fruit-quarter"],
+    ["2026-09-15T12:00:00.000Z", "fruit-third"],
+  ])("balances UK full-screen panels for %s", (date, expectedBalance) => {
+    const result = new SeasonalityDriver().at(date).execute();
+
+    expect(result.shortlist.layout_balance).toBe(expectedBalance);
+    [result.shortlist.fruits, result.shortlist.vegetables].forEach(
+      (category) => {
+        expect(category.row_demand).toBe(
+          Math.ceil(category.categories.length / 2)
+        );
+      }
+    );
+  });
+
+  test("balances equally dense fruit and vegetable panels", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("australia")
+      .at("2026-03-15T12:00:00.000Z")
+      .execute();
+
+    expect(result.shortlist.fruits.row_demand).toBe(4);
+    expect(result.shortlist.vegetables.row_demand).toBe(4);
+    expect(result.shortlist.layout_balance).toBe("balanced");
   });
 
   test.each([
@@ -188,6 +226,15 @@ describe("TRMNL seasonality transform", () => {
       );
       expect(result.vegetable_count).toBeLessThanOrEqual(
         FULL_SCREEN_LIMITS.vegetable
+      );
+      [result.shortlist.fruits, result.shortlist.vegetables].forEach(
+        (category) => {
+          expect(
+            category.categories
+              .flatMap((group) => group.examples.map((item) => item.id))
+              .sort()
+          ).toEqual(category.items.map((item) => item.id).sort());
+        }
       );
     }
   });

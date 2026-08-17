@@ -1,7 +1,4 @@
-{% assign fruit_limit = 24 %}
-{% assign vegetable_limit = 36 %}
-
-<div class="layout layout--col layout--stretch ins-layout ins-layout--full ins-layout--density-maximum">
+<div class="layout layout--col layout--stretch ins-layout ins-layout--full">
   {% if has_data %}
     <div class="ins-header flex flex--row flex--between flex--center-y gap--medium">
       <div class="ins-brand flex flex--row flex--center-y">
@@ -13,25 +10,29 @@
     </div>
 
     {% if has_items %}
-      <div class="ins-board">
-      <section class="ins-section rounded flex flex--col">
-        <div class="ins-section__header p--2 flex flex--center flex--center-y">
+      <div class="ins-board ins-board--{{ shortlist.layout_balance }}">
+      <section class="ins-section ins-section--fruit rounded">
+        <div class="ins-section__header p--2 flex flex--col flex--center">
           <img class="ins-section__art ins-section__art--fruit" src="{{ ins_fruit_art }}" alt="Fruit">
         </div>
-        <div class="ins-produce-list ins-produce-list--fruit p--1">
-          {% for produce in shortlist.fruits.items limit: fruit_limit %}
-            <div class="ins-produce">{{ produce.name | escape }}</div>
+        <div class="ins-category-list ins-category-list--fruit">
+          {% for category in shortlist.fruits.categories %}
+            <div class="ins-category">
+              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
+            </div>
           {% endfor %}
         </div>
       </section>
 
-      <section class="ins-section rounded flex flex--col">
-        <div class="ins-section__header p--2 flex flex--center flex--center-y">
+      <section class="ins-section ins-section--vegetables rounded">
+        <div class="ins-section__header p--2 flex flex--col flex--center">
           <img class="ins-section__art ins-section__art--vegetables" src="{{ ins_vegetable_art }}" alt="Vegetables">
         </div>
-        <div class="ins-produce-list ins-produce-list--vegetables p--1">
-          {% for produce in shortlist.vegetables.items limit: vegetable_limit %}
-            <div class="ins-produce">{{ produce.name | escape }}</div>
+        <div class="ins-category-list ins-category-list--vegetables">
+          {% for category in shortlist.vegetables.categories %}
+            <div class="ins-category">
+              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
+            </div>
           {% endfor %}
         </div>
       </section>

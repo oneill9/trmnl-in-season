@@ -19,16 +19,6 @@
     min-width: 0;
   }
 
-  .ins-eyebrow {
-    overflow: hidden;
-    font-weight: 700;
-    letter-spacing: 1.4px;
-    line-height: 1;
-    text-overflow: ellipsis;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
   .ins-heading {
     overflow: hidden;
     font-weight: 400;
@@ -89,61 +79,15 @@
   }
 
   .ins-layout--full .ins-section__art {
-    max-width: 100%;
+    max-width: 76px;
+    height: 42px;
     object-position: center;
-    transform: translateY(8px);
-  }
-
-  .ins-section__title {
-    min-width: 0;
-    overflow: hidden;
-    font: 800 16px/1 Inter, sans-serif;
-    letter-spacing: 1.2px;
-    text-overflow: ellipsis;
-    text-transform: uppercase;
-    white-space: nowrap;
+    transform: none;
   }
 
   .ins-section__count {
     flex: 0 0 auto;
     font: 700 13px/1 Inter, sans-serif;
-  }
-
-  .ins-produce-list {
-    display: grid;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    gap: 4px 12px;
-  }
-
-  .ins-layout--full .ins-produce-list {
-    padding-bottom: 8px !important;
-    row-gap: 2px;
-  }
-
-  .ins-produce-list--vegetables {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-flow: row;
-  }
-
-  .ins-produce-list--fruit {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-flow: row;
-  }
-
-  .ins-layout--density-maximum .ins-produce-list {
-    grid-template-rows: repeat(12, minmax(0, 1fr));
-  }
-
-  .ins-produce {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    overflow: hidden;
-    font: 500 21px/1.2 "Inter Variable", Inter, sans-serif;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .ins-category-list {
@@ -185,6 +129,76 @@
     font: 500 14px/1.1 Inter, sans-serif;
   }
 
+  .ins-layout--full .ins-category-list {
+    align-content: stretch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: 0 12px;
+    padding: 5px 10px;
+  }
+
+  .ins-layout--full .ins-category {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    align-content: center;
+    column-gap: 5px;
+    border-bottom: 0;
+  }
+
+  .ins-layout--full .ins-category__name {
+    display: block;
+    overflow: visible;
+    font: 700 14px/1.1 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .ins-layout--full .ins-category__examples {
+    display: block;
+    overflow: visible;
+    font: 500 15px/1.15 Inter, sans-serif;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .ins-layout--full .ins-board {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .ins-layout--full .ins-board--fruit-empty {
+    grid-template-rows: 56px minmax(0, 1fr);
+  }
+
+  .ins-layout--full .ins-board--fruit-quarter {
+    grid-template-rows: minmax(0, 0.28fr) minmax(0, 0.72fr);
+  }
+
+  .ins-layout--full .ins-board--fruit-third {
+    grid-template-rows: minmax(0, 0.37fr) minmax(0, 0.63fr);
+  }
+
+  .ins-layout--full .ins-board--balanced {
+    grid-template-rows: minmax(0, 0.46fr) minmax(0, 0.54fr);
+  }
+
+  .ins-layout--full .ins-board--fruit-two-thirds {
+    grid-template-rows: minmax(0, 0.63fr) minmax(0, 0.37fr);
+  }
+
+  .ins-layout--full .ins-board--vegetables-empty {
+    grid-template-rows: minmax(0, 1fr) 56px;
+  }
+
+  .ins-layout--full .ins-section {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .ins-layout--full .ins-section__header {
+    border-right: 1px solid #000;
+  }
+
   .ins-empty {
     flex: 1 1 auto;
     width: 100%;
@@ -223,11 +237,6 @@
     letter-spacing: -0.6px;
   }
 
-  .ins-layout--half-horizontal .ins-eyebrow,
-  .ins-layout--half-vertical .ins-eyebrow {
-    letter-spacing: 1px;
-  }
-
   .ins-layout--half-horizontal .ins-board {
     grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
     gap: 7px;
@@ -235,11 +244,6 @@
 
   .ins-layout--half-horizontal .ins-heading {
     font: 400 18px/1.2 Inter, sans-serif;
-  }
-
-  .ins-layout--half-horizontal .ins-section__title,
-  .ins-layout--half-vertical .ins-section__title {
-    font: 800 14px/1 Inter, sans-serif;
   }
 
   .ins-layout--half-horizontal .ins-section__count,
@@ -342,10 +346,6 @@
     letter-spacing: -0.4px;
   }
 
-  .ins-layout--quadrant .ins-eyebrow {
-    letter-spacing: 0.8px;
-  }
-
   .ins-layout--quadrant .ins-board {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: 5px;
@@ -359,11 +359,6 @@
     max-width: 60%;
     height: 28px;
     object-position: center;
-  }
-
-  .ins-layout--quadrant .ins-section__title {
-    font: 800 13px/1 Inter, sans-serif;
-    letter-spacing: 0.8px;
   }
 
   .ins-layout--quadrant .ins-section__count {

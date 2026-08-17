@@ -16,9 +16,9 @@ The transparent 512×512 recipe-listing icon is stored at [`src/assets/in-season
 - Separate fruit and vegetable lists using country-local terminology
 - Conservative national harvest guides with no imported, stored, or greenhouse-only availability
 - Full, half-horizontal, half-vertical, and quadrant layouts
-- 21px popularity-ranked full-screen lists showing up to 24 fruit and 36 vegetables
+- Complete full-screen category rows with aligned bold labels and produce names
 - E-ink-friendly botanical produce artwork
-- Abundance-ranked category summaries on compact layouts, with two familiar examples per category
+- Abundance-ranked category summaries on compact layouts, with familiar examples per category
 - No runtime API key, external data request, or user data storage
 
 ## How it works
@@ -28,7 +28,7 @@ The plugin has a required Country dropdown and a bundled, versioned seasonality 
 1. Reads the selected country and the user's TRMNL timezone.
 2. Selects produce whose domestic harvest window includes the current calendar month.
 3. Applies the terminology familiar in that country, such as “aubergine,” “eggplant,” “courgette,” “zucchini,” “capsicum,” or “kūmara.”
-4. Produces readable popularity-ranked lists for the full layout and seasonal category summaries for smaller layouts.
+4. Groups the complete full-screen harvest into readable categories and produces concise category summaries for smaller layouts.
 
 The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See the [public source guide](https://oneill9.github.io/trmnl-in-season/) or [Data Sources and Methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
 

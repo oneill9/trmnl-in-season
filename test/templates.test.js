@@ -34,8 +34,8 @@ class FullScreenLayoutDriver {
     return Number(columnDeclaration?.[1]);
   }
 
-  hasProduceBullets() {
-    return /\.ins-produce::before/.test(this.stylesheet);
+  hasCategoryBullets() {
+    return /\.ins-category::before/.test(this.stylesheet);
   }
 
   hasInlineBotanicalArt(sectionName) {
@@ -176,6 +176,102 @@ class FullScreenLayoutDriver {
   hasRepeatedFooterContext() {
     return /class="instance"[\s\S]*country_short_name[\s\S]*month_name/.test(
       this.markup
+    );
+  }
+
+  hasCompleteCategoryRows(sectionName) {
+    const categoryPath = `shortlist.${sectionName}.categories`;
+
+    return (
+      this.markup.includes(`{% for category in ${categoryPath} %}`) &&
+      this.markup.includes("{{ category.name | escape }}") &&
+      this.markup.includes("{% for example in category.examples %}") &&
+      this.markup.includes("{{ example.name | escape }}")
+    );
+  }
+
+  categoryRule() {
+    return this.stylesheet.match(
+      /\.ins-layout--full \.ins-category \{([^}]+)\}/
+    )?.[1];
+  }
+
+  categoryTextRule(part) {
+    return this.stylesheet.match(
+      new RegExp(`\\.ins-layout--full \\.ins-category__${part} \\{([^}]+)\\}`)
+    )?.[1];
+  }
+
+  hasDenseInlineCategoryRows() {
+    const categoryRule = this.categoryRule();
+    const nameRule = this.categoryTextRule("name");
+    const examplesRule = this.categoryTextRule("examples");
+
+    return (
+      /display:\s*block/.test(categoryRule ?? "") &&
+      /border-bottom:\s*0/.test(categoryRule ?? "") &&
+      /font:\s*800/.test(nameRule ?? "") &&
+      /font:\s*500/.test(examplesRule ?? "") &&
+      [nameRule, examplesRule].every(
+        (rule) =>
+          /display:\s*inline/.test(rule ?? "") &&
+          /overflow:\s*visible/.test(rule ?? "") &&
+          /white-space:\s*normal/.test(rule ?? "")
+      )
+    );
+  }
+
+  hasResponsiveHorizontalPanels() {
+    const boardRule = this.stylesheet.match(
+      /\.ins-layout--full \.ins-board \{([^}]+)\}/
+    )?.[1];
+
+    return (
+      this.markup.includes(
+        "ins-board ins-board--{{ shortlist.layout_balance }}"
+      ) &&
+      /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(boardRule ?? "") &&
+      this.stylesheet.includes(".ins-board--fruit-empty") &&
+      this.stylesheet.includes(".ins-board--fruit-quarter") &&
+      this.stylesheet.includes(".ins-board--fruit-third") &&
+      this.stylesheet.includes(".ins-board--balanced")
+    );
+  }
+
+  hasCollapsedEmptyFruitPanel() {
+    const rule = this.stylesheet.match(
+      /\.ins-layout--full \.ins-board--fruit-empty \{([^}]+)\}/
+    )?.[1];
+
+    return /grid-template-rows:\s*56px\s+minmax\(0,\s*1fr\)/.test(
+      rule ?? ""
+    );
+  }
+
+  hasArtworkOnlySectionMarkers() {
+    return (
+      (this.markup.match(/class="ins-section__header/g) ?? []).length === 2 &&
+      !this.markup.includes("ins-section__title")
+    );
+  }
+
+  hasAlignedCategoryColumns() {
+    const categoryRule = this.categoryRule();
+    const nameRule = this.categoryTextRule("name");
+    const examplesRule = this.categoryTextRule("examples");
+
+    return (
+      /display:\s*grid/.test(categoryRule ?? "") &&
+      /grid-template-columns:\s*84px\s+minmax\(0,\s*1fr\)/.test(
+        categoryRule ?? ""
+      ) &&
+      /font:\s*700 14px/.test(nameRule ?? "") &&
+      /font:\s*500 15px/.test(examplesRule ?? "") &&
+      [nameRule, examplesRule].every(
+        (rule) =>
+          /display:\s*block/.test(rule ?? "") &&
+          /white-space:\s*normal/.test(rule ?? "")
+      )
     );
   }
 
@@ -324,20 +420,14 @@ describe("Liquid layout contract", () => {
     expect(markup).not.toMatch(/National harvest guide|guide_label/);
   });
 
-  test("full layout renders complete readable produce lists", () => {
-    const markup = template("full");
+  test("full layout renders complete produce grouped into categories", () => {
+    const fullScreen = new FullScreenLayoutDriver();
 
-    expect(markup).toContain("{% assign fruit_limit = 24 %}");
-    expect(markup).toContain("{% assign vegetable_limit = 36 %}");
-    expect(markup).not.toContain("preview_density");
-    expect(markup).toMatch(
-      /{% for produce in shortlist\.fruits\.items limit: fruit_limit %}/
-    );
-    expect(markup).toMatch(
-      /{% for produce in shortlist\.vegetables\.items limit: vegetable_limit %}/
-    );
-    expect(markup).not.toContain("fruit_more");
-    expect(markup).not.toContain("vegetable_more");
+    expect(fullScreen.hasCompleteCategoryRows("fruits")).toBe(true);
+    expect(fullScreen.hasCompleteCategoryRows("vegetables")).toBe(true);
+    expect(fullScreen.markup).not.toContain("preview_density");
+    expect(fullScreen.markup).not.toContain("fruit_more");
+    expect(fullScreen.markup).not.toContain("vegetable_more");
   });
 
   test.each(["half_horizontal", "half_vertical", "quadrant"])(
@@ -362,37 +452,27 @@ describe("Liquid layout contract", () => {
     expect(markup).toMatch(/month_name \| escape/);
   });
 
-  test("full layout escapes produce names", () => {
-    expect(template("full")).toMatch(/produce\.name \| escape/);
-  });
-
-  test("full-screen produce names use TRMNL's readable list typography", () => {
-    const stylesheet = template("shared");
-    const produceRule = stylesheet.match(/\.ins-produce \{([^}]+)\}/)?.[1];
-
-    expect(produceRule).toMatch(
-      /font: 500 21px\/1\.2 "Inter Variable", Inter, sans-serif/
-    );
-    expect(produceRule).not.toMatch(/letter-spacing/);
-  });
-
-  test("full-screen lists maximise readable content without bullets", () => {
+  test("full-screen categories align bold labels beside regular wrapping names", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
-    expect(fullScreen.columnCount("fruit")).toBe(2);
-    expect(fullScreen.columnCount("vegetables")).toBe(3);
-    expect(fullScreen.hasProduceBullets()).toBe(false);
+    expect(fullScreen.hasAlignedCategoryColumns()).toBe(true);
+    expect(fullScreen.hasCategoryBullets()).toBe(false);
   });
 
-  test("full-screen section headings use botanical art", () => {
+  test("full-screen uses responsive horizontal panels", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasResponsiveHorizontalPanels()).toBe(true);
+    expect(fullScreen.hasCollapsedEmptyFruitPanel()).toBe(true);
+  });
+
+  test("full-screen uses botanical artwork without text section headings", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
     expect(fullScreen.hasInlineBotanicalArt("fruit")).toBe(true);
     expect(fullScreen.hasInlineBotanicalArt("vegetables")).toBe(true);
-    expect(fullScreen.botanicalHeaderCountWithEightPixelPadding()).toBe(2);
-    expect(fullScreen.hasSectionHeaderDivider()).toBe(false);
+    expect(fullScreen.hasArtworkOnlySectionMarkers()).toBe(true);
     expect(fullScreen.botanicalArtEdgeInset()).toBe(2);
-    expect(fullScreen.botanicalArtVerticalOffset()).toBe(8);
   });
 
   test("full-screen header uses a text-only wordmark without a source QR or counts", () => {
@@ -403,13 +483,6 @@ describe("Liquid layout contract", () => {
     expect(fullScreen.hasSourceQrCode()).toBe(false);
     expect(fullScreen.hasSectionCounts()).toBe(false);
     expect(fullScreen.hasLegacyHeaderCopy()).toBe(false);
-  });
-
-  test("full-screen produce lists fill each row from left to right", () => {
-    const fullScreen = new FullScreenLayoutDriver();
-
-    expect(fullScreen.listFlow("fruit")).toBe("row");
-    expect(fullScreen.listFlow("vegetables")).toBe("row");
   });
 
   test("full-screen header gives the month explicit bold emphasis", () => {
@@ -427,17 +500,9 @@ describe("Liquid layout contract", () => {
     );
   });
 
-  test("full-screen lists leave eight pixels of bottom clearance", () => {
+  test("full-screen categories retain bottom clearance without a footer", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
-    expect(fullScreen.produceListBottomPadding()).toBe(8);
-  });
-
-  test("full-screen lists fit twelve readable rows without a footer", () => {
-    const fullScreen = new FullScreenLayoutDriver();
-
-    expect(fullScreen.produceListRowCount()).toBe(12);
-    expect(fullScreen.produceListRowGap()).toBe(2);
     expect(fullScreen.hasFooter()).toBe(false);
   });
 

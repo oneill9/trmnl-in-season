@@ -931,9 +931,49 @@ function buildCompactCategories(fruits, vegetables) {
 }
 
 function buildFullScreenShortlist(fruits, vegetables) {
+  const fullScreenCategory = (items, limit) => {
+    const shortlist = compactCategory(items, limit);
+    const summary = summarizeCategories(
+      shortlist.items,
+      CATEGORY_GROUPS.length,
+      Number.POSITIVE_INFINITY
+    );
+
+    return {
+      ...shortlist,
+      categories: summary.categories,
+      row_demand: Math.ceil(summary.categories.length / 2),
+    };
+  };
+
+  const fruitSummary = fullScreenCategory(fruits, FULL_SCREEN_LIMITS.fruit);
+  const vegetableSummary = fullScreenCategory(
+    vegetables,
+    FULL_SCREEN_LIMITS.vegetable
+  );
+  const totalRowDemand =
+    fruitSummary.row_demand + vegetableSummary.row_demand;
+  const fruitShare = totalRowDemand
+    ? fruitSummary.row_demand / totalRowDemand
+    : 0.5;
+  let layoutBalance = "balanced";
+
+  if (fruitSummary.row_demand === 0) {
+    layoutBalance = "fruit-empty";
+  } else if (vegetableSummary.row_demand === 0) {
+    layoutBalance = "vegetables-empty";
+  } else if (fruitShare <= 0.25) {
+    layoutBalance = "fruit-quarter";
+  } else if (fruitShare <= 0.4) {
+    layoutBalance = "fruit-third";
+  } else if (fruitShare >= 0.6) {
+    layoutBalance = "fruit-two-thirds";
+  }
+
   return {
-    fruits: compactCategory(fruits, FULL_SCREEN_LIMITS.fruit),
-    vegetables: compactCategory(vegetables, FULL_SCREEN_LIMITS.vegetable),
+    fruits: fruitSummary,
+    vegetables: vegetableSummary,
+    layout_balance: layoutBalance,
   };
 }
 
