@@ -130,18 +130,17 @@
   }
 
   .ins-layout--full .ins-category-list {
-    align-content: stretch;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: minmax(0, 1fr);
-    gap: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     padding: 5px 10px;
   }
 
   .ins-layout--full .ins-category {
     display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    align-content: center;
-    column-gap: 5px;
+    grid-template-columns: 28% minmax(0, 1fr);
+    align-content: start;
+    column-gap: 10px;
     border-bottom: 0;
   }
 
@@ -162,41 +161,17 @@
   }
 
   .ins-layout--full .ins-board {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-  }
-
-  .ins-layout--full .ins-board--fruit-empty {
-    grid-template-rows: 56px minmax(0, 1fr);
-  }
-
-  .ins-layout--full .ins-board--fruit-quarter {
-    grid-template-rows: minmax(0, 0.28fr) minmax(0, 0.72fr);
-  }
-
-  .ins-layout--full .ins-board--fruit-third {
-    grid-template-rows: minmax(0, 0.37fr) minmax(0, 0.63fr);
-  }
-
-  .ins-layout--full .ins-board--balanced {
-    grid-template-rows: minmax(0, 0.46fr) minmax(0, 0.54fr);
-  }
-
-  .ins-layout--full .ins-board--fruit-two-thirds {
-    grid-template-rows: minmax(0, 0.63fr) minmax(0, 0.37fr);
-  }
-
-  .ins-layout--full .ins-board--vegetables-empty {
-    grid-template-rows: minmax(0, 1fr) 56px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 10px;
   }
 
   .ins-layout--full .ins-section {
-    display: grid;
-    grid-template-columns: 88px minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
   }
 
   .ins-layout--full .ins-section__header {
-    border-right: 1px solid #000;
+    flex: 0 0 56px;
   }
 
   .ins-empty {
@@ -391,6 +366,30 @@
     font: 500 11px/1.1 Inter, sans-serif;
     text-overflow: clip;
     white-space: normal;
+  }
+
+  @media (min-height: 600px) {
+    .ins-layout--full .ins-section__header {
+      flex-basis: 72px;
+    }
+
+    .ins-layout--full .ins-section__art {
+      max-width: 126px;
+      height: 44px;
+    }
+
+    .ins-layout--full .ins-category-list {
+      gap: 18px;
+    }
+
+    .ins-layout--full .ins-category__name {
+      font: 800 18px/1.18 Inter, sans-serif;
+    }
+
+    .ins-layout--full .ins-category__examples {
+      font: 500 21px/1.18 Inter, sans-serif;
+      letter-spacing: -0.3px;
+    }
   }
 
 </style>

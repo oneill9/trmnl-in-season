@@ -221,30 +221,74 @@ class FullScreenLayoutDriver {
     );
   }
 
-  hasResponsiveHorizontalPanels() {
+  hasOriginalSideBySidePanels() {
     const boardRule = this.stylesheet.match(
       /\.ins-layout--full \.ins-board \{([^}]+)\}/
     )?.[1];
 
     return (
-      this.markup.includes(
-        "ins-board ins-board--{{ shortlist.layout_balance }}"
-      ) &&
-      /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(boardRule ?? "") &&
-      this.stylesheet.includes(".ins-board--fruit-empty") &&
-      this.stylesheet.includes(".ins-board--fruit-quarter") &&
-      this.stylesheet.includes(".ins-board--fruit-third") &&
-      this.stylesheet.includes(".ins-board--balanced")
+      this.markup.includes('<div class="ins-board">') &&
+      /grid-template-columns:\s*minmax\(0,\s*0\.8fr\)\s+minmax\(0,\s*1\.2fr\)/.test(
+        boardRule ?? ""
+      )
     );
   }
 
-  hasCollapsedEmptyFruitPanel() {
-    const rule = this.stylesheet.match(
-      /\.ins-layout--full \.ins-board--fruit-empty \{([^}]+)\}/
+  hasOpenTwentyEightSeventyTwoTable() {
+    const categoryRule = this.categoryRule();
+    const listRule = this.stylesheet.match(
+      /\.ins-layout--full \.ins-category-list \{([^}]+)\}/
     )?.[1];
 
-    return /grid-template-rows:\s*56px\s+minmax\(0,\s*1fr\)/.test(
-      rule ?? ""
+    return (
+      /display:\s*grid/.test(categoryRule ?? "") &&
+      /grid-template-columns:\s*28%\s+minmax\(0,\s*1fr\)/.test(
+        categoryRule ?? ""
+      ) &&
+      /border-bottom:\s*0/.test(categoryRule ?? "") &&
+      /gap:\s*4px/.test(listRule ?? "") &&
+      !/border(?:-right|-bottom)?:/.test(listRule ?? "")
+    );
+  }
+
+  fullScreenCategoryFontSize(part) {
+    const rule = this.categoryTextRule(part);
+
+    return Number(rule?.match(/font:\s*[^;]*?(\d+)px\//)?.[1]);
+  }
+
+  tallDisplayStyles() {
+    const mediaStart = this.stylesheet.indexOf("@media (min-height: 600px)");
+
+    return mediaStart < 0 ? "" : this.stylesheet.slice(mediaStart);
+  }
+
+  tallDisplayCategoryFontSize(part) {
+    const styles = this.tallDisplayStyles();
+    const rule = styles.match(
+      new RegExp(`\\.ins-layout--full \\.ins-category__${part} \\{([^}]+)\\}`)
+    )?.[1];
+
+    return Number(rule?.match(/font:\s*[^;]*?(\d+)px\//)?.[1]);
+  }
+
+  tallDisplayRowGap() {
+    const rule = this.tallDisplayStyles().match(
+      /\.ins-layout--full \.ins-category-list \{([^}]+)\}/
+    )?.[1];
+
+    return Number(rule?.match(/gap:\s*(\d+)px/)?.[1]);
+  }
+
+  hasNoInternalTableRules() {
+    const categoryRule = this.categoryRule();
+    const headerRule = this.stylesheet.match(
+      /\.ins-layout--full \.ins-section__header \{([^}]+)\}/
+    )?.[1];
+
+    return (
+      /border-bottom:\s*0/.test(categoryRule ?? "") &&
+      !/border-(?:right|bottom):/.test(headerRule ?? "")
     );
   }
 
@@ -262,7 +306,7 @@ class FullScreenLayoutDriver {
 
     return (
       /display:\s*grid/.test(categoryRule ?? "") &&
-      /grid-template-columns:\s*84px\s+minmax\(0,\s*1fr\)/.test(
+      /grid-template-columns:\s*28%\s+minmax\(0,\s*1fr\)/.test(
         categoryRule ?? ""
       ) &&
       /font:\s*700 14px/.test(nameRule ?? "") &&
@@ -459,11 +503,27 @@ describe("Liquid layout contract", () => {
     expect(fullScreen.hasCategoryBullets()).toBe(false);
   });
 
-  test("full-screen uses responsive horizontal panels", () => {
+  test("full-screen restores the original side-by-side panel composition", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
-    expect(fullScreen.hasResponsiveHorizontalPanels()).toBe(true);
-    expect(fullScreen.hasCollapsedEmptyFruitPanel()).toBe(true);
+    expect(fullScreen.hasOriginalSideBySidePanels()).toBe(true);
+  });
+
+  test("full-screen categories use an open 28/72 table without internal rules", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasOpenTwentyEightSeventyTwoTable()).toBe(true);
+    expect(fullScreen.hasNoInternalTableRules()).toBe(true);
+  });
+
+  test("full-screen typography grows for tall displays without risking short screens", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.fullScreenCategoryFontSize("name")).toBe(14);
+    expect(fullScreen.fullScreenCategoryFontSize("examples")).toBe(15);
+    expect(fullScreen.tallDisplayCategoryFontSize("name")).toBe(18);
+    expect(fullScreen.tallDisplayCategoryFontSize("examples")).toBe(21);
+    expect(fullScreen.tallDisplayRowGap()).toBe(18);
   });
 
   test("full-screen uses botanical artwork without text section headings", () => {
