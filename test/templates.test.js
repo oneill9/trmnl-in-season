@@ -234,6 +234,19 @@ class FullScreenLayoutDriver {
     );
   }
 
+  hasStackedPortraitPanels() {
+    const boardRule = this.stylesheet.match(
+      /\.screen--portrait \.ins-layout--full \.ins-board \{([^}]+)\}/
+    )?.[1];
+
+    return (
+      /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(boardRule ?? "") &&
+      /grid-template-rows:\s*minmax\(0,\s*0\.8fr\)\s+minmax\(0,\s*1\.2fr\)/.test(
+        boardRule ?? ""
+      )
+    );
+  }
+
   hasOpenTwentyEightSeventyTwoTable() {
     const categoryRule = this.categoryRule();
     const listRule = this.stylesheet.match(
@@ -507,6 +520,12 @@ describe("Liquid layout contract", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
     expect(fullScreen.hasOriginalSideBySidePanels()).toBe(true);
+  });
+
+  test("full-screen stacks wide panels in portrait mode", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasStackedPortraitPanels()).toBe(true);
   });
 
   test("full-screen categories use an open 28/72 table without internal rules", () => {
