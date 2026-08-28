@@ -470,6 +470,12 @@ class CompactLayoutDriver {
     );
   }
 
+  hasFullWidthCategoryLists() {
+    const rule = this.stylesheet.match(/\.ins-category-list \{([^}]+)\}/)?.[1];
+
+    return /width:\s*100%/.test(rule ?? "");
+  }
+
   portraitBoardRule() {
     return this.stylesheet.match(
       new RegExp(
@@ -751,6 +757,12 @@ describe("Liquid layout contract", () => {
 
     expect(quadrant.hasPackedCategoryRows()).toBe(true);
     expect(quadrant.hasCategorySeparators()).toBe(false);
+  });
+
+  test("category lists stretch across centered flex sections", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.hasFullWidthCategoryLists()).toBe(true);
   });
 
   test.each(["half_vertical", "quadrant"])(
