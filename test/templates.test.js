@@ -11,9 +11,9 @@ const LAYOUTS = [
 ];
 
 const TALL_DISPLAY_TYPOGRAPHY = {
-  half_horizontal: { heading: 24, name: 20, examples: 16, count: 14, art: 32 },
-  half_vertical: { heading: 24, name: 24, examples: 18, count: 14, art: 44 },
-  quadrant: { heading: 20, name: 20, examples: 15, count: 12, art: 36 },
+  half_horizontal: { heading: 21, name: 18, examples: 16, count: 14, art: 32 },
+  half_vertical: { heading: 21, name: 20, examples: 18, count: 14, art: 44 },
+  quadrant: { heading: 21, name: 18, examples: 15, count: 12, art: 36 },
 };
 
 function template(name) {
