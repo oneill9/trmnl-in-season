@@ -765,7 +765,7 @@ describe("Liquid layout contract", () => {
     expect(halfVertical.hasFullWidthCategoryLists()).toBe(true);
   });
 
-  test.each(["half_vertical", "quadrant"])(
+  test.each(["half_horizontal", "half_vertical", "quadrant"])(
     "%s stacks its panels in portrait mode",
     (layout) => {
       const driver = new CompactLayoutDriver(layout);
@@ -784,19 +784,16 @@ describe("Liquid layout contract", () => {
     );
   });
 
-  test("quadrant portrait splits rows evenly between equal category lists", () => {
-    const quadrant = new CompactLayoutDriver("quadrant");
+  test.each(["half_horizontal", "quadrant"])(
+    "%s portrait splits rows evenly between its two lists",
+    (layout) => {
+      const driver = new CompactLayoutDriver(layout);
 
-    expect(quadrant.portraitBoardRule()).toMatch(
-      /grid-template-rows:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/
-    );
-  });
-
-  test("half-horizontal keeps side-by-side panels in portrait mode", () => {
-    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
-
-    expect(halfHorizontal.portraitBoardRule()).toBeUndefined();
-  });
+      expect(driver.portraitBoardRule()).toMatch(
+        /grid-template-rows:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/
+      );
+    }
+  );
 
   test.each(["half_horizontal", "half_vertical", "quadrant"])(
     "%s typography grows for tall displays without risking short screens",
