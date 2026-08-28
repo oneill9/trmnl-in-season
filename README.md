@@ -6,35 +6,35 @@
   <img src="src/assets/in-season-icon.png" alt="In Season aubergine icon" width="128">
 </p>
 
-A self-contained [TRMNL](https://usetrmnl.com/) plugin showing which fruit and vegetables are being harvested domestically this month. The only setting is the user's country.
+A [TRMNL](https://usetrmnl.com/) plugin that lists fruit and vegetables harvested in the user's country during the current month. It ships with its seasonality data and asks only for the country.
 
-The transparent 512×512 recipe-listing icon is stored at [`src/assets/in-season-icon.png`](src/assets/in-season-icon.png).
+The repository stores the 512×512 transparent recipe icon at [`src/assets/in-season-icon.png`](src/assets/in-season-icon.png).
 
 ## Features
 
-- United Kingdom, Ireland, United States, Canada, Australia, and New Zealand
-- Separate fruit and vegetable lists using country-local terminology
-- Conservative national harvest guides with no imported, stored, or greenhouse-only availability
-- Full, half-horizontal, half-vertical, and quadrant layouts
-- Complete full-screen category rows with aligned bold labels and produce names
-- E-ink-friendly botanical produce artwork
-- Abundance-ranked category summaries on compact layouts, with familiar examples per category
-- No runtime API key, external data request, or user data storage
+- Covers the United Kingdom, Ireland, United States, Canada, Australia, and New Zealand
+- Uses local names such as "aubergine," "eggplant," "courgette," "zucchini," "capsicum," and "kūmara"
+- Omits imported produce and items available only from storage or heated greenhouses
+- Supports full, half-horizontal, half-vertical, and quadrant layouts
+- Shows every category and matching item in the full layout
+- Uses botanical artwork designed for e-ink displays
+- Ranks categories by abundance in smaller layouts and gives familiar examples from each category
+- Makes no runtime API requests and stores no user data
 
 ## How it works
 
-The plugin has a required Country dropdown and a bundled, versioned seasonality catalogue. Once per day, its serverless Node.js transform:
+The plugin has a required Country dropdown and a versioned seasonality catalogue. Once per day, its serverless Node.js transform does the following:
 
 1. Reads the selected country and the user's TRMNL timezone.
 2. Selects produce whose domestic harvest window includes the current calendar month.
-3. Applies the terminology familiar in that country, such as “aubergine,” “eggplant,” “courgette,” “zucchini,” “capsicum,” or “kūmara.”
-4. Groups the complete full-screen harvest into readable categories and produces concise category summaries for smaller layouts.
+3. Uses the produce names familiar in that country.
+4. Groups all matching produce for the full layout and builds shorter category summaries for smaller layouts.
 
-The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See the [public source guide](https://oneill9.github.io/trmnl-in-season/) or [Data Sources and Methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
+The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See the [public source guide](https://oneill9.github.io/trmnl-in-season/) or [Data sources and methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
 
 ## Deploy to TRMNL
 
-This repository is configured for the existing In Season plugin, ID `407471`. Maintainers can deploy it with the official [`trmnlp`](https://github.com/usetrmnl/trmnlp) tool:
+This repository deploys the existing In Season plugin with ID `407471`. Maintainers use the official [`trmnlp`](https://github.com/usetrmnl/trmnlp) tool:
 
 ```sh
 git clone https://github.com/oneill9/trmnl-in-season.git
@@ -44,15 +44,15 @@ bundle exec trmnlp login
 bundle exec trmnlp push
 ```
 
-The push updates the plugin identified in `src/settings.yml`. To adapt this project as a separate private plugin, first create or clone your own plugin with `trmnlp` and use that plugin's ID instead. After deployment, choose a country in the plugin settings and add the instance to a device playlist.
+The push updates the plugin identified in `src/settings.yml`. To run this project as a separate private plugin, create or clone a plugin with `trmnlp`, then replace the committed plugin ID with your own. After deployment, choose a country in the plugin settings and add the instance to a device playlist.
 
 ## Continuous deployment
 
-The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and TRMNL lint checks on pull requests and pushes to `main`. After a successful `main` verification, it publishes the plugin with `trmnlp push --force`. GitHub Actions use immutable revisions, and `Gemfile.lock` pins the TRMNL tooling and its Ruby dependencies.
+The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and TRMNL lint checks on pull requests and pushes to `main`. If the checks pass on `main`, the workflow publishes the plugin with `trmnlp push --force`. The workflow pins each GitHub Action to an immutable revision. `Gemfile.lock` pins the TRMNL tooling and its Ruby dependencies.
 
 The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static source guide from `docs/` when its content changes on `main`.
 
-[Dependabot](.github/dependabot.yml) checks GitHub Actions, Bundler, and npm dependencies every Monday. Minor and patch releases are grouped by ecosystem, while major upgrades receive separate pull requests for review.
+[Dependabot](.github/dependabot.yml) checks GitHub Actions, Bundler, and npm dependencies every Monday. It groups minor and patch releases by ecosystem and opens separate pull requests for major upgrades.
 
 Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update this private plugin instead of creating another one.
 
@@ -74,7 +74,15 @@ Start the live preview server with:
 ./scripts/start-server.sh
 ```
 
-The launcher installs the locked Ruby dependencies when needed, waits for the server, and opens `http://localhost:4567` in the default macOS browser. The local preview uses the country and timezone configured in `.trmnlp.yml`.
+The launcher installs the locked Ruby dependencies when needed. It waits for the server, then opens `http://localhost:4567` in the default macOS browser. The local preview uses the country and timezone in `.trmnlp.yml`.
+
+For static, device-accurate previews without a server, run:
+
+```sh
+npm run previews
+```
+
+This renders every layout for the current month into `_build/devices/` against the pinned Framework at OG (800x480) and TRMNL X (1040x780) dimensions, in both orientations. It also writes `gallery.html`, which tiles all twelve layout and device combinations in frames sized to the exact device viewport, so media queries behave as they do on real hardware no matter how the browser window is sized.
 
 If Ruby is not installed, use TRMNL's container:
 

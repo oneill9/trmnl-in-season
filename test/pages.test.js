@@ -74,7 +74,7 @@ describe("public source guide", () => {
       "hortnz.co.nz",
     ];
 
-    expect(page).toContain("What “in season” means");
+    expect(page).toContain("What \"in season\" means");
     expectedSourceHosts.forEach((sourceHost) => {
       expect(page).toContain(sourceHost);
     });
