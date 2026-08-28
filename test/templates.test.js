@@ -10,6 +10,12 @@ const LAYOUTS = [
   "quadrant",
 ];
 
+const TALL_DISPLAY_TYPOGRAPHY = {
+  half_horizontal: { heading: 24, name: 20, examples: 16, count: 14, art: 32 },
+  half_vertical: { heading: 24, name: 24, examples: 18, count: 14, art: 44 },
+  quadrant: { heading: 20, name: 20, examples: 15, count: 12, art: 36 },
+};
+
 function template(name) {
   return fs.readFileSync(
     path.join(__dirname, "..", "src", `${name}.liquid`),
@@ -471,6 +477,32 @@ class CompactLayoutDriver {
       )
     )?.[1];
   }
+
+  tallDisplayStyles() {
+    const mediaStart = this.stylesheet.indexOf("@media (min-height: 600px)");
+
+    return mediaStart < 0 ? "" : this.stylesheet.slice(mediaStart);
+  }
+
+  tallDisplayRule(className) {
+    return this.tallDisplayStyles().match(
+      new RegExp(
+        `\\.ins-layout--${this.layout.replace("_", "-")} \\.${className} \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
+
+  tallDisplayFontSize(className) {
+    return Number(
+      this.tallDisplayRule(className)?.match(/font:\s*[^;]*?(\d+)px\//)?.[1]
+    );
+  }
+
+  tallDisplayArtHeight() {
+    return Number(
+      this.tallDisplayRule("ins-section__art")?.match(/height:\s*(\d+)px/)?.[1]
+    );
+  }
 }
 
 describe("Liquid layout contract", () => {
@@ -753,4 +785,28 @@ describe("Liquid layout contract", () => {
 
     expect(halfHorizontal.portraitBoardRule()).toBeUndefined();
   });
+
+  test.each(["half_horizontal", "half_vertical", "quadrant"])(
+    "%s typography grows for tall displays without risking short screens",
+    (layout) => {
+      const driver = new CompactLayoutDriver(layout);
+      const expected = TALL_DISPLAY_TYPOGRAPHY[layout];
+      const baseArtHeight = Number(
+        driver.orientationRule()?.match(/height:\s*(\d+)px/)?.[1]
+      );
+
+      expect(driver.tallDisplayFontSize("ins-heading")).toBe(expected.heading);
+      expect(driver.tallDisplayFontSize("ins-category__name")).toBe(
+        expected.name
+      );
+      expect(driver.tallDisplayFontSize("ins-category__examples")).toBe(
+        expected.examples
+      );
+      expect(driver.tallDisplayFontSize("ins-section__count")).toBe(
+        expected.count
+      );
+      expect(driver.tallDisplayArtHeight()).toBe(expected.art);
+      expect(driver.tallDisplayArtHeight()).toBeGreaterThan(baseArtHeight);
+    }
+  );
 });
