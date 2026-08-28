@@ -21,6 +21,12 @@
               <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
             </div>
           {% endfor %}
+          {% if fruit_count == 0 %}
+            <div class="ins-harvest-quiet flex flex--col flex--center text--center">
+              <div class="label label--small label--inverted">Out of season</div>
+              <div class="title title--base">No fruit in season</div>
+            </div>
+          {% endif %}
         </div>
       </section>
 
@@ -34,6 +40,12 @@
               <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
             </div>
           {% endfor %}
+          {% if vegetable_count == 0 %}
+            <div class="ins-harvest-quiet flex flex--col flex--center text--center">
+              <div class="label label--small label--inverted">Out of season</div>
+              <div class="title title--base">No vegetables in season</div>
+            </div>
+          {% endif %}
         </div>
       </section>
       </div>

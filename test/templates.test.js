@@ -112,6 +112,15 @@ class FullScreenLayoutDriver {
     return this.markup.includes("ins-section__count");
   }
 
+  hasEmptySideMessages() {
+    return (
+      this.markup.includes("{% if fruit_count == 0 %}") &&
+      this.markup.includes("No fruit in season") &&
+      this.markup.includes("{% if vegetable_count == 0 %}") &&
+      this.markup.includes("No vegetables in season")
+    );
+  }
+
   hasFooter() {
     return this.markup.includes('class="title_bar"');
   }
@@ -368,9 +377,7 @@ class CompactLayoutDriver {
   }
 
   hasTotalCounts() {
-    return /total_count|fruit_count|vegetable_count|\d+ items/.test(
-      this.markup
-    );
+    return /\{\{[^}]*\b(?:total|fruit|vegetable)_count/.test(this.markup);
   }
 
   hasConditionalOverflowFor(sectionName) {
@@ -467,6 +474,15 @@ class CompactLayoutDriver {
           /overflow:\s*visible/.test(rule ?? "") &&
           /white-space:\s*normal/.test(rule ?? "")
       )
+    );
+  }
+
+  hasEmptySideMessages() {
+    return (
+      this.markup.includes("{% if fruit_count == 0 %}") &&
+      this.markup.includes("No fruit in season") &&
+      this.markup.includes("{% if vegetable_count == 0 %}") &&
+      this.markup.includes("No vegetables in season")
     );
   }
 
@@ -579,6 +595,12 @@ describe("Liquid layout contract", () => {
 
     expect(fullScreen.hasOpenTwentyEightSeventyTwoTable()).toBe(true);
     expect(fullScreen.hasNoInternalTableRules()).toBe(true);
+  });
+
+  test("full-screen names empty harvest sides explicitly", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasEmptySideMessages()).toBe(true);
   });
 
   test("full-screen typography grows for tall displays without risking short screens", () => {
@@ -764,6 +786,15 @@ describe("Liquid layout contract", () => {
 
     expect(halfVertical.hasFullWidthCategoryLists()).toBe(true);
   });
+
+  test.each(LAYOUTS.filter((layout) => layout !== "full"))(
+    "%s names empty harvest sides explicitly",
+    (layout) => {
+      const driver = new CompactLayoutDriver(layout);
+
+      expect(driver.hasEmptySideMessages()).toBe(true);
+    }
+  );
 
   test.each(["half_vertical", "quadrant"])(
     "%s stacks its panels in portrait mode",
