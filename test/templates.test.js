@@ -463,6 +463,14 @@ class CompactLayoutDriver {
       )
     );
   }
+
+  portraitBoardRule() {
+    return this.stylesheet.match(
+      new RegExp(
+        `\\.screen--portrait \\.ins-layout--${this.layout.replace("_", "-")} \\.ins-board \\{([^}]+)\\}`
+      )
+    )?.[1];
+  }
 }
 
 describe("Liquid layout contract", () => {
@@ -711,5 +719,38 @@ describe("Liquid layout contract", () => {
 
     expect(quadrant.hasPackedCategoryRows()).toBe(true);
     expect(quadrant.hasCategorySeparators()).toBe(false);
+  });
+
+  test.each(["half_vertical", "quadrant"])(
+    "%s stacks its panels in portrait mode",
+    (layout) => {
+      const driver = new CompactLayoutDriver(layout);
+
+      expect(driver.portraitBoardRule()).toMatch(
+        /grid-template-columns:\s*minmax\(0,\s*1fr\)/
+      );
+    }
+  );
+
+  test("half-vertical portrait gives the longer vegetable list the taller row", () => {
+    const halfVertical = new CompactLayoutDriver("half_vertical");
+
+    expect(halfVertical.portraitBoardRule()).toMatch(
+      /grid-template-rows:\s*minmax\(0,\s*0\.9fr\)\s+minmax\(0,\s*1\.1fr\)/
+    );
+  });
+
+  test("quadrant portrait splits rows evenly between equal category lists", () => {
+    const quadrant = new CompactLayoutDriver("quadrant");
+
+    expect(quadrant.portraitBoardRule()).toMatch(
+      /grid-template-rows:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/
+    );
+  });
+
+  test("half-horizontal keeps side-by-side panels in portrait mode", () => {
+    const halfHorizontal = new CompactLayoutDriver("half_horizontal");
+
+    expect(halfHorizontal.portraitBoardRule()).toBeUndefined();
   });
 });

@@ -322,6 +322,11 @@
     border-bottom: 0;
   }
 
+  .screen--portrait .ins-layout--half-vertical .ins-board {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+
   .ins-layout--quadrant .ins-heading {
     letter-spacing: -0.4px;
   }
@@ -357,6 +362,11 @@
 
   .ins-layout--quadrant .ins-category {
     border-bottom: 0;
+  }
+
+  .screen--portrait .ins-layout--quadrant .ins-board {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .ins-layout--quadrant .ins-category__name {
