@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Sources and methodology for the TRMNL In Season produce guide.">
     <title>In Season | Sources and methodology</title>
+    <link rel="icon" type="image/png" href="in-season-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..800&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
       :root {
-        color-scheme: light;
-        --ink: #171717;
-        --muted: #666;
-        --paper: #f7f5ef;
-        --card: #fff;
-        --line: #d8d4c9;
+        color-scheme: dark;
+        --bg: #0d0d0d;
+        --card: #1a1a1a;
+        --line: #202020;
+        --ink: #e8e7e4;
+        --muted: #8f8f8f;
+        --accent: #f8654b;
+        --accent-soft: #ff9280;
+        --pill-line: #5b5b5b;
       }
 
       * { box-sizing: border-box; }
@@ -22,12 +29,12 @@
       body {
         margin: 0;
         color: var(--ink);
-        background: var(--paper);
-        font: 17px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        font: 400 17px/1.6 Inter, sans-serif;
       }
 
       a { color: inherit; text-underline-offset: 0.18em; }
-      a:hover { text-decoration-thickness: 2px; }
+      a:hover { color: var(--accent); text-decoration-thickness: 2px; }
 
       header,
       main,
@@ -36,12 +43,37 @@
         margin-inline: auto;
       }
 
-      header { padding: 4rem 0 2rem; }
+      header {
+        padding: 3rem 0 2rem;
+        border-bottom: 3px solid var(--accent);
+      }
 
-      .eyebrow {
-        margin: 0 0 0.5rem;
-        font-size: 0.78rem;
-        font-weight: 800;
+      .ins-header-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+
+      .ins-tile {
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        width: 96px;
+        height: 96px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--card);
+      }
+
+      .ins-tile img {
+        width: 64px;
+        height: 64px;
+      }
+
+      .ins-eyebrow {
+        margin: 0 0 0.75rem;
+        color: var(--accent);
+        font: 700 0.78rem/1 Space Mono, monospace;
         letter-spacing: 0.14em;
         text-transform: uppercase;
       }
@@ -49,12 +81,19 @@
       h1,
       h2 {
         margin: 0;
-        letter-spacing: -0.035em;
+        color: var(--accent);
+        font-family: "EB Garamond", serif;
+        font-weight: 600;
         line-height: 1.08;
+        letter-spacing: -0.015em;
       }
 
-      h1 { font-size: clamp(2.5rem, 9vw, 4.75rem); }
-      h2 { font-size: clamp(1.65rem, 5vw, 2.2rem); }
+      .ins-hero {
+        font-size: clamp(2.4rem, 6vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      .ins-card-title { font-size: clamp(1.6rem, 4.5vw, 2.1rem); }
 
       .intro {
         max-width: 62ch;
@@ -72,73 +111,95 @@
 
       nav a {
         padding: 0.35rem 0.7rem;
-        border: 1px solid var(--ink);
-        border-radius: 999px;
+        border: 1px solid var(--pill-line);
+        border-radius: 9999px;
         font-size: 0.86rem;
         font-weight: 700;
         text-decoration: none;
       }
 
+      nav a:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--bg);
+      }
+
       .method,
       .country {
-        margin: 0 0 1rem;
+        margin: 2rem 0 0;
         padding: clamp(1.25rem, 4vw, 2rem);
         border: 1px solid var(--line);
-        border-radius: 1rem;
+        border-radius: 10px;
         background: var(--card);
         scroll-margin-top: 1rem;
       }
 
-      .method { margin-bottom: 2rem; }
+      .method p,
+      .country p { margin: 1rem 0 0; }
+
+      .country ul {
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .country li + li {
+        margin-top: 0;
+        padding-top: 0.75rem;
+        border-top: 1px dotted var(--pill-line);
+      }
+
       .method p:last-child,
       .country ul:last-child { margin-bottom: 0; }
 
-      .country h2 { padding-right: 2rem; }
-
-      .country ul {
-        margin: 1rem 0;
-        padding-left: 1.25rem;
-      }
-
-      .country li + li { margin-top: 0.55rem; }
       .note { color: var(--muted); }
 
       footer {
-        padding: 2rem 0 4rem;
+        margin-top: 2rem;
+        padding: 1.5rem 0 4rem;
+        border-top: 1px dotted var(--pill-line);
         color: var(--muted);
         font-size: 0.9rem;
       }
 
       @media (max-width: 520px) {
-        header { padding-top: 2.5rem; }
+        header { padding-top: 2rem; }
         body { font-size: 16px; }
+        .ins-header-row { flex-direction: column; gap: 1.25rem; }
       }
     </style>
   </head>
   <body>
     <header>
-      <p class="eyebrow">TRMNL produce guide</p>
-      <h1>In Season</h1>
-      <p class="intro">This page explains how the monthly fruit and vegetable guide chooses its data. It also links to the calendars used for each country.</p>
-      <nav aria-label="Country sources">
-        <a href="#united-kingdom">United Kingdom</a>
-        <a href="#ireland">Ireland</a>
-        <a href="#united-states">United States</a>
-        <a href="#canada">Canada</a>
-        <a href="#australia">Australia</a>
-        <a href="#new-zealand">New Zealand</a>
-      </nav>
+      <div class="ins-header-row">
+        <div class="ins-tile">
+          <img src="in-season-icon.png" alt="In Season aubergine icon" width="64" height="64">
+        </div>
+        <div>
+          <p class="ins-eyebrow">TRMNL produce guide</p>
+          <h1 class="ins-hero">In Season</h1>
+          <p class="intro">This page explains how the monthly fruit and vegetable guide chooses its data. It also links to the calendars used for each country.</p>
+          <nav aria-label="Country sources">
+            <a href="#united-kingdom">United Kingdom</a>
+            <a href="#ireland">Ireland</a>
+            <a href="#united-states">United States</a>
+            <a href="#canada">Canada</a>
+            <a href="#australia">Australia</a>
+            <a href="#new-zealand">New Zealand</a>
+          </nav>
+        </div>
+      </div>
     </header>
 
     <main>
       <section class="method" aria-labelledby="method-title">
-        <h2 id="method-title">What "in season" means</h2>
+        <h2 class="ins-card-title" id="method-title">What "in season" means</h2>
         <p>The guide includes a fruit or vegetable when growers normally harvest it in the selected country during that month. It excludes imports and produce available only from long-term storage, heated greenhouses, or other protected methods.</p>
         <p>The guide uses government sources, national horticultural organisations, and national produce boards where possible. If no detailed national source exists, it uses the overlap between two reputable regional sources. Weather, latitude, altitude, cultivar, and farming method can shift harvest dates by several weeks.</p>
       </section>
 
       <section class="country" id="united-kingdom">
-        <h2>United Kingdom</h2>
+        <h2 class="ins-card-title">United Kingdom</h2>
         <ul>
           <li><a href="https://www.rhs.org.uk/advice/grow-your-own">Royal Horticultural Society, Grow Your Own</a>, including its fruit gardening calendar, vegetable crop planner, and harvesting guidance.</li>
           <li><a href="https://www.worcestershire.gov.uk/lets-waste-less/foodsavvy/how-eat-seasonally">Worcestershire County Council, How to eat seasonally</a>.</li>
@@ -146,21 +207,21 @@
       </section>
 
       <section class="country" id="ireland">
-        <h2>Ireland</h2>
+        <h2 class="ins-card-title">Ireland</h2>
         <ul>
           <li><a href="https://www.bordbia.ie/whats-in-season/">Bord Bia, Best in Season calendar</a>.</li>
         </ul>
       </section>
 
       <section class="country" id="united-states">
-        <h2>United States</h2>
+        <h2 class="ins-card-title">United States</h2>
         <ul>
           <li><a href="https://snaped.fns.usda.gov/resources/nutrition-education-materials/seasonal-produce-guide">USDA SNAP-Ed, Seasonal Produce Guide</a>.</li>
         </ul>
       </section>
 
       <section class="country" id="canada">
-        <h2>Canada</h2>
+        <h2 class="ins-card-title">Canada</h2>
         <ul>
           <li><a href="https://www.ontario.ca/foodland/page/availability-guide">Foodland Ontario, Availability guide</a>.</li>
           <li><a href="https://buybc.gov.bc.ca/app/uploads/sites/386/2020/10/Seasonal-Chart.pdf">Buy BC, Seasonal chart</a>.</li>
@@ -169,7 +230,7 @@
       </section>
 
       <section class="country" id="australia">
-        <h2>Australia</h2>
+        <h2 class="ins-card-title">Australia</h2>
         <ul>
           <li><a href="https://slhd.health.nsw.gov.au/yhunger/brainfood/seasonal-fruit-vegetable-guide">Sydney Local Health District, Seasonal Fruit and Vegetable Guide</a>.</li>
           <li><a href="https://www.brisbane.qld.gov.au/about-council/your-brisbane/environment-and-sustainability/food-waste/buying-local-seasonal-fruit-and-vegetables">Brisbane City Council, Buying local, seasonal fruit and vegetables</a>.</li>
@@ -178,7 +239,7 @@
       </section>
 
       <section class="country" id="new-zealand">
-        <h2>New Zealand</h2>
+        <h2 class="ins-card-title">New Zealand</h2>
         <ul>
           <li><a href="https://www.workandincome.govt.nz/work/find-jobs/where-to-look-for-jobs/seasonal-work-calendar.html">Work and Income New Zealand, Fruit and vegetable seasonal work calendar</a>.</li>
           <li><a href="https://www.hortnz.co.nz/assets/Vegetables-co-nz/resources/SEASONABILITY-CHART-A3.pdf">Horticulture New Zealand, Vegetable seasonability chart</a>.</li>

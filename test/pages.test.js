@@ -40,6 +40,10 @@ class SourcesPageDriver {
       /@[0-9a-f]{40}$/.test(reference)
     );
   }
+
+  docsFileExists(name) {
+    return fs.existsSync(path.join(__dirname, "..", "docs", name));
+  }
 }
 
 describe("public source guide", () => {
@@ -78,6 +82,21 @@ describe("public source guide", () => {
     expectedSourceHosts.forEach((sourceHost) => {
       expect(page).toContain(sourceHost);
     });
+  });
+
+  test("references page assets that ship inside docs/", () => {
+    const page = new SourcesPageDriver();
+
+    expect(page.page()).toContain("in-season-icon.png");
+    expect(page.docsFileExists("in-season-icon.png")).toBe(true);
+  });
+
+  test("themes the page with the TRMNL site palette", () => {
+    const page = new SourcesPageDriver();
+
+    expect(page.page()).toContain("#f8654b");
+    expect(page.page()).toContain("#0d0d0d");
+    expect(page.page()).not.toContain("trmnl.com/css");
   });
 
   test("deploys the source guide through GitHub Pages", () => {

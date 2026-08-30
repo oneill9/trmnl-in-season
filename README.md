@@ -109,6 +109,7 @@ docker run --rm --pull always \
 │       └── trmnl.yml
 ├── docs
 │   ├── DATA_SOURCES.md
+│   ├── in-season-icon.png
 │   └── index.html
 ├── src
 │   ├── assets
