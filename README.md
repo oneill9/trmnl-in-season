@@ -21,7 +21,7 @@ A [TRMNL](https://usetrmnl.com/) plugin that lists fruit and vegetables harveste
 
 ## How it works
 
-The plugin has a required Country dropdown and a versioned seasonality catalogue. Once per day, its serverless Node.js transform does the following:
+The plugin has a required Country dropdown and a versioned seasonality catalogue. Once per day, TRMNL runs the bundled transform (a single Node.js script) to:
 
 1. Reads the selected country and the user's TRMNL timezone.
 2. Selects produce whose domestic harvest window includes the current calendar month.
