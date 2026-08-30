@@ -8,8 +8,6 @@
 
 A [TRMNL](https://usetrmnl.com/) plugin that lists fruit and vegetables harvested in the user's country during the current month. It ships with its seasonality data and asks only for the country.
 
-The repository stores the 512×512 transparent recipe icon at [`src/assets/in-season-icon.png`](src/assets/in-season-icon.png).
-
 ## Features
 
 - Covers the United Kingdom, Ireland, United States, Canada, Australia, and New Zealand
