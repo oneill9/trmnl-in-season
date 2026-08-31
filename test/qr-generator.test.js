@@ -1,145 +1,281 @@
 "use strict";
 
+const crypto = require("crypto");
+const { execFileSync } = require("child_process");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { PNG } = require("pngjs");
 const jsQR = require("jsqr");
+const {
+  BinaryBitmap,
+  HybridBinarizer,
+  QRCodeReader,
+  RGBLuminanceSource,
+} = require("@zxing/library");
+const { QrCode, Ecc } = require("../scripts/vendor/qrcodegen.js");
 
 const generateQr = require("../scripts/generate-qr.js");
 
 const SOURCES_URL = "https://oneill9.github.io/trmnl-in-season/";
 const QART_PAYLOAD = /^https:\/\/oneill9\.github\.io\/trmnl-in-season\/#\d+$/;
-const LADDER_VARIANTS = ["v5l", "v5m", "v6h", "v7h"];
-const DITHER_STYLES = ["threshold", "floyd-steinberg", "scatter"];
-const MODULE_SCALES = [2, 3];
-const QR_DIR = path.join(__dirname, "..", "_build", "qr");
+const ROTATIONS = [0, 90, 180, 270];
 
-function readPng(file) {
-  return PNG.sync.read(fs.readFileSync(path.join(QR_DIR, file)));
+function readPng(filePath) {
+  return PNG.sync.read(fs.readFileSync(filePath));
 }
 
 function luminance(png) {
-  const { width, height, data } = png;
-  const gray = new Float32Array(width * height);
+  const gray = new Uint8ClampedArray(png.width * png.height);
 
-  for (let i = 0; i < width * height; i += 1) {
-    gray[i] =
-      0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+  for (let i = 0; i < gray.length; i += 1) {
+    gray[i] = Math.round(
+      0.299 * png.data[i * 4] +
+        0.587 * png.data[i * 4 + 1] +
+        0.114 * png.data[i * 4 + 2]
+    );
   }
 
   return gray;
 }
 
-function binarize(gray) {
-  const bits = new Uint8ClampedArray(gray.length);
+function toRgba(gray) {
+  const rgba = new Uint8ClampedArray(gray.length * 4);
 
   for (let i = 0; i < gray.length; i += 1) {
-    bits[i] = gray[i] < 128 ? 0 : 255;
-  }
-
-  return bits;
-}
-
-function toRgba(bits) {
-  const rgba = new Uint8ClampedArray(bits.length * 4);
-
-  for (let i = 0; i < bits.length; i += 1) {
-    rgba[i * 4] = bits[i];
-    rgba[i * 4 + 1] = bits[i];
-    rgba[i * 4 + 2] = bits[i];
+    rgba[i * 4] = gray[i];
+    rgba[i * 4 + 1] = gray[i];
+    rgba[i * 4 + 2] = gray[i];
     rgba[i * 4 + 3] = 255;
   }
 
   return rgba;
 }
 
-function decodeExact(png) {
-  return jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
+function rotateClockwise(png) {
+  const rotated = new PNG({ width: png.height, height: png.width });
+
+  for (let y = 0; y < png.height; y += 1) {
+    for (let x = 0; x < png.width; x += 1) {
+      const source = (y * png.width + x) * 4;
+      const targetX = png.height - 1 - y;
+      const targetY = x;
+      const target = (targetY * rotated.width + targetX) * 4;
+
+      for (let channel = 0; channel < 4; channel += 1) {
+        rotated.data[target + channel] = png.data[source + channel];
+      }
+    }
+  }
+
+  return rotated;
 }
 
-function decodeEInk(png) {
-  return jsQR(toRgba(binarize(luminance(png))), png.width, png.height);
+function cameraRender(png) {
+  const source = luminance(png);
+  const softened = new Uint8ClampedArray(source.length);
+
+  for (let y = 0; y < png.height; y += 1) {
+    for (let x = 0; x < png.width; x += 1) {
+      let sum = 0;
+      let count = 0;
+
+      for (let dy = -1; dy <= 1; dy += 1) {
+        const sampleY = y + dy;
+        if (sampleY < 0 || sampleY >= png.height) continue;
+
+        for (let dx = -1; dx <= 1; dx += 1) {
+          const sampleX = x + dx;
+          if (sampleX < 0 || sampleX >= png.width) continue;
+          const distance = Math.abs(dx) + Math.abs(dy);
+          if (distance > 1) continue;
+          const weight = distance === 0 ? 4 : 1;
+
+          sum += source[sampleY * png.width + sampleX] * weight;
+          count += weight;
+        }
+      }
+
+      const blurred = sum / count;
+      softened[y * png.width + x] = Math.round(40 + (blurred / 255) * 175);
+    }
+  }
+
+  const rendered = new PNG({ width: png.width, height: png.height });
+  rendered.data.set(toRgba(softened));
+  return rendered;
+}
+
+function decodeWithJsQr(png) {
+  return jsQR(new Uint8ClampedArray(png.data), png.width, png.height)?.data ?? null;
+}
+
+function decodeWithZxing(png) {
+  const source = new RGBLuminanceSource(luminance(png), png.width, png.height);
+  const bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+  try {
+    return new QRCodeReader().decode(bitmap).getText();
+  } catch {
+    return null;
+  }
+}
+
+function sha256(filePath) {
+  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+class QArtCandidateDriver {
+  constructor(outDir, entry) {
+    this.entry = entry;
+    this.png = readPng(path.join(outDir, entry.file));
+  }
+
+  payloads(png = this.png) {
+    return {
+      jsQr: decodeWithJsQr(png),
+      zxing: decodeWithZxing(png),
+    };
+  }
+
+  cameraPayloads() {
+    return this.payloads(rotateClockwise(cameraRender(this.png)));
+  }
+}
+
+class QArtGeneratorDriver {
+  constructor({ freshProcess = false } = {}) {
+    this.outDir = fs.mkdtempSync(path.join(os.tmpdir(), "trmnl-qart-"));
+    if (freshProcess) {
+      execFileSync(
+        process.execPath,
+        [
+          "-e",
+          "require('./scripts/generate-qr.js').generate({ outDir: process.argv[1] });",
+          this.outDir,
+        ],
+        { cwd: path.join(__dirname, "..") }
+      );
+      this.manifest = JSON.parse(
+        fs.readFileSync(path.join(this.outDir, "manifest.json"), "utf8")
+      );
+    } else {
+      this.manifest = generateQr.generate({ outDir: this.outDir });
+    }
+  }
+
+  cleanup() {
+    fs.rmSync(this.outDir, { recursive: true, force: true });
+  }
+
+  candidates() {
+    return this.manifest.candidates.map(
+      (entry) => new QArtCandidateDriver(this.outDir, entry)
+    );
+  }
+
+  solveV5Low({ mask = 0 } = {}) {
+    const solved = generateQr.solveQArt(5, Ecc.LOW, mask, () => 0.5);
+    const qr = new QrCode(5, Ecc.LOW, solved.data, mask);
+
+    return {
+      claimedTargetMismatches() {
+        return solved.claims.filter(
+          (claim) => !claim.hardZero && qr.modules[claim.y][claim.x] !== claim.targetDark
+        );
+      },
+    };
+  }
 }
 
 describe("QArt sources QR generator", () => {
-  let manifest;
+  let generator;
 
   beforeAll(() => {
-    manifest = generateQr.generate({ outDir: QR_DIR });
+    generator = new QArtGeneratorDriver();
   });
 
-  test("emits the full candidate ladder with a manifest", () => {
-    expect(Array.isArray(manifest.candidates)).toBe(true);
+  afterAll(() => {
+    generator.cleanup();
+  });
 
-    const qartEntries = manifest.candidates.filter((c) => c.kind === "qart");
-    const plainEntries = manifest.candidates.filter((c) => c.kind === "plain");
+  test("every claimed coordinate renders the requested target module", () => {
+    expect(generator.solveV5Low().claimedTargetMismatches()).toHaveLength(0);
+  });
 
-    expect(qartEntries.length).toBe(
-      LADDER_VARIANTS.length * DITHER_STYLES.length * MODULE_SCALES.length
-    );
-    expect(plainEntries.length).toBe(MODULE_SCALES.length);
+  test("emits one deterministic V5-L review candidate per rotation", () => {
+    expect(generator.manifest.generatedAt).toBeUndefined();
+    expect(generator.manifest.candidates).toHaveLength(ROTATIONS.length);
+    expect(generator.manifest.candidates.map((entry) => entry.rotation)).toEqual(ROTATIONS);
 
-    for (const variant of LADDER_VARIANTS) {
-      for (const style of DITHER_STYLES) {
-        for (const scale of MODULE_SCALES) {
-          const entry = qartEntries.find(
-            (c) => c.variant === variant && c.style === style && c.scale === scale
-          );
+    for (const entry of generator.manifest.candidates) {
+      expect(entry).toMatchObject({
+        kind: "qart",
+        version: 5,
+        ecl: "L",
+        scale: 2,
+        modules: 37,
+        width: 90,
+        height: 90,
+      });
+      expect(entry.similarity).toBeGreaterThanOrEqual(0.6);
+      expect(entry.placement.targetWidth / entry.placement.targetHeight).toBeCloseTo(0.8, 1);
+      expect(fs.existsSync(path.join(generator.outDir, entry.file))).toBe(true);
+    }
+  });
 
-          expect(entry).toBeDefined();
-          expect(fs.existsSync(path.join(QR_DIR, entry.file))).toBe(true);
+  test("every candidate decodes with two independent readers", () => {
+    for (const candidate of generator.candidates()) {
+      for (const payload of Object.values(candidate.payloads())) {
+        expect(payload).toMatch(QART_PAYLOAD);
+      }
+    }
+  });
+
+  test("every candidate survives deterministic blur, contrast loss, and rotation", () => {
+    for (const candidate of generator.candidates()) {
+      for (const [decoder, payload] of Object.entries(candidate.cameraPayloads())) {
+        if (!QART_PAYLOAD.test(payload ?? "")) {
+          throw new Error(`${candidate.entry.file} did not survive with ${decoder}`);
         }
       }
     }
   });
 
-  test.each(LADDER_VARIANTS)(
-    "%s candidates encode the sources URL with a numeric fragment",
-    (variant) => {
-      const entries = manifest.candidates.filter(
-        (c) => c.kind === "qart" && c.variant === variant
-      );
+  test("repeated generation produces byte-identical candidates and manifest", () => {
+    const repeated = new QArtGeneratorDriver({ freshProcess: true });
 
-      expect(entries.length).toBe(DITHER_STYLES.length * MODULE_SCALES.length);
+    try {
+      expect(repeated.manifest).toEqual(generator.manifest);
 
-      for (const entry of entries) {
-        const decoded = decodeExact(readPng(entry.file));
+      for (const entry of generator.manifest.candidates) {
+        expect(sha256(path.join(repeated.outDir, entry.file))).toBe(
+          sha256(path.join(generator.outDir, entry.file))
+        );
+      }
+    } finally {
+      repeated.cleanup();
+    }
+  });
 
-        expect(decoded).not.toBeNull();
-        expect(decoded.data).toMatch(QART_PAYLOAD);
+  test("payloads retain the exact sources URL before their numeric canvas", () => {
+    for (const candidate of generator.candidates()) {
+      for (const payload of Object.values(candidate.payloads())) {
+        expect(payload.startsWith(`${SOURCES_URL}#`)).toBe(true);
       }
     }
-  );
-
-  test("plain reference candidates encode the sources URL without a fragment", () => {
-    const entries = manifest.candidates.filter((c) => c.kind === "plain");
-
-    expect(entries.length).toBe(MODULE_SCALES.length);
-
-    for (const entry of entries) {
-      const decoded = decodeExact(readPng(entry.file));
-
-      expect(decoded).not.toBeNull();
-      expect(decoded.data).toBe(SOURCES_URL);
-    }
   });
 
-  test("every candidate decodes on a 1-bit e-ink-accurate render", () => {
-    for (const entry of manifest.candidates) {
-      const decoded = decodeEInk(readPng(entry.file));
+  test("replaces stale generator artifacts with the current candidate set", () => {
+    fs.writeFileSync(path.join(generator.outDir, "qr-v7h-scatter-3px.png"), "stale");
+    fs.writeFileSync(path.join(generator.outDir, "index.html"), "stale");
 
-      expect(decoded).not.toBeNull();
-      expect(decoded.data).toEqual(expect.any(String));
-    }
-  });
+    const manifest = generateQr.generate({ outDir: generator.outDir });
+    const expectedFiles = [
+      "manifest.json",
+      ...manifest.candidates.map((candidate) => candidate.file),
+    ].sort();
 
-  test("candidates render at exact module scale with a quiet zone", () => {
-    for (const entry of manifest.candidates) {
-      const png = readPng(entry.file);
-      const expectedSide = (entry.modules + 8) * entry.scale;
-
-      expect(png.width).toBe(expectedSide);
-      expect(png.height).toBe(expectedSide);
-    }
+    expect(fs.readdirSync(generator.outDir).sort()).toEqual(expectedFiles);
   });
 });

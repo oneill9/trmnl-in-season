@@ -10,11 +10,10 @@
  * Gauss-Jordan elimination lets us pin chosen pixels to the dithered
  * image while the code stays a valid, uncorrupted QR symbol.
  *
- * The claim loop, BitBlock Gauss-Jordan structure, contrast importance
- * ordering, Floyd-Steinberg pass, and the invalid-group (>= 1000)
- * hard-zero retry all follow Russ Cox's reference implementation
- * (rsc.io/qr/qart). QR encoding, masking, penalties, and the module
- * topology come from the vendored nayuki encoder (scripts/vendor/).
+ * The claim loop, BitBlock Gauss-Jordan structure, contrast ordering,
+ * and invalid-group (>= 1000) hard-zero retry follow Russ Cox's reference
+ * implementation (rsc.io/qr/qart). QR encoding, masking, penalties, and
+ * module topology come from the vendored Nayuki encoder (scripts/vendor/).
  *
  * Usage:
  *   node scripts/generate-qr.js                     write the ladder to _build/qr
@@ -38,18 +37,13 @@ const {
 const ROOT = path.join(__dirname, "..");
 const QR_DIR = path.join(ROOT, "_build", "qr");
 const FULL_LIQUID = path.join(ROOT, "src", "full.liquid");
-const ICON_PATH = path.join(ROOT, "src", "assets", "in-season-icon.png");
+const ICON_PATH = path.join(ROOT, "src", "assets", "in-season-qr.png");
 const SOURCES_URL = "https://oneill9.github.io/trmnl-in-season/";
 const QUIET_MODULES = 4;
-
-const VARIANTS = {
-  v5l: { version: 5, ecl: Ecc.LOW },
-  v5m: { version: 5, ecl: Ecc.MEDIUM },
-  v6h: { version: 6, ecl: Ecc.HIGH },
-  v7h: { version: 7, ecl: Ecc.HIGH },
-};
-const STYLES = ["threshold", "floyd-steinberg", "scatter"];
-const SCALES = [2, 3];
+const VERSION = 5;
+const ECL = Ecc.LOW;
+const SCALE = 2;
+const ROTATIONS = [0, 90, 180, 270];
 
 /* ---------- deterministic PRNG ---------- */
 
@@ -123,16 +117,46 @@ function loadIconLuminance() {
   return iconLum;
 }
 
-function resampleTarget(size) {
-  const { width, height, lum } = loadIconLuminance();
-  const target = new Float32Array(size * size);
+function rotateTarget(target, size, rotation) {
+  if (rotation === 0) return target;
+  const rotated = new Float32Array(target.length);
 
   for (let y = 0; y < size; y += 1) {
-    const y0 = Math.floor((y * height) / size);
-    const y1 = Math.max(y0 + 1, Math.floor(((y + 1) * height) / size));
     for (let x = 0; x < size; x += 1) {
-      const x0 = Math.floor((x * width) / size);
-      const x1 = Math.max(x0 + 1, Math.floor(((x + 1) * width) / size));
+      let targetX;
+      let targetY;
+
+      if (rotation === 90) {
+        targetX = size - 1 - y;
+        targetY = x;
+      } else if (rotation === 180) {
+        targetX = size - 1 - x;
+        targetY = size - 1 - y;
+      } else {
+        targetX = y;
+        targetY = size - 1 - x;
+      }
+
+      rotated[targetY * size + targetX] = target[y * size + x];
+    }
+  }
+
+  return rotated;
+}
+
+function resampleTarget(size, rotation = 0) {
+  const { width, height, lum } = loadIconLuminance();
+  const target = new Float32Array(size * size).fill(255);
+  const targetWidth = Math.max(1, Math.round((size * width) / height));
+  const targetHeight = size;
+  const offsetX = Math.floor((size - targetWidth) / 2);
+
+  for (let y = 0; y < targetHeight; y += 1) {
+    const y0 = Math.floor((y * height) / targetHeight);
+    const y1 = Math.max(y0 + 1, Math.floor(((y + 1) * height) / targetHeight));
+    for (let x = 0; x < targetWidth; x += 1) {
+      const x0 = Math.floor((x * width) / targetWidth);
+      const x1 = Math.max(x0 + 1, Math.floor(((x + 1) * width) / targetWidth));
       let sum = 0;
       let count = 0;
       for (let sy = y0; sy < y1; sy += 1) {
@@ -141,11 +165,15 @@ function resampleTarget(size) {
           count += 1;
         }
       }
-      target[y * size + x] = sum / count;
+      target[y * size + offsetX + x] = sum / count;
     }
   }
 
-  return target;
+  return {
+    target: rotateTarget(target, size, rotation),
+    targetWidth,
+    targetHeight,
+  };
 }
 
 function darkThreshold(target, size) {
@@ -170,11 +198,11 @@ function claimableGrid(maps, size) {
   return claimable;
 }
 
-function placeTarget(target, size, claimable, darkCut) {
+function placeTarget(target, size, claimable, darkCut, keep = 1) {
   // Scale the trimmed glyph to several window sizes and slide it over the
-  // symbol (rsc's Dx/Dy panning), keeping the placement that puts the most
-  // glyph-dark pixels on claimable modules. Pixels outside the window
-  // render as background (light target).
+  // symbol (rsc's Dx/Dy panning), ranking placements by how many glyph-dark
+  // pixels land on claimable modules. Pixels outside the window render as
+  // background (light target).
   const toDark = (values, n) => {
     const bits = new Uint8Array(n * n);
     for (let i = 0; i < n * n; i += 1) bits[i] = values[i] < darkCut ? 1 : 0;
@@ -202,12 +230,11 @@ function placeTarget(target, size, claimable, darkCut) {
     return out;
   };
 
-  let best = null;
-  for (const win of [size - 8, size - 12, size - 16, size - 20]) {
-    if (win < 8) continue;
+  const ranked = [];
+  for (let win = size - 8; win >= 12; win -= 2) {
     const darkW = toDark(shrink(target, win), win);
-    for (let dy = 0; dy + win <= size; dy += 2) {
-      for (let dx = 0; dx + win <= size; dx += 2) {
+    for (let dy = 0; dy + win <= size; dy += 1) {
+      for (let dx = 0; dx + win <= size; dx += 1) {
         let score = 0;
         for (let y = 0; y < win; y += 1) {
           for (let x = 0; x < win; x += 1) {
@@ -215,22 +242,25 @@ function placeTarget(target, size, claimable, darkCut) {
             score += claimable[(y + dy) * size + (x + dx)] ? 1 : -3;
           }
         }
-        if (!best || score > best.score) best = { score, win, dx, dy };
+        ranked.push({ score, win, dx, dy });
       }
     }
   }
-  if (!best || best.score <= 0) best = { score: 0, win: size, dx: 0, dy: 0 };
-
-  const { win, dx, dy } = best;
-  const glyph = win === size ? target.slice() : shrink(target, win);
-  const placed = new Float32Array(size * size).fill(255);
-  for (let y = 0; y < win; y += 1) {
-    for (let x = 0; x < win; x += 1) {
-      placed[(y + dy) * size + (x + dx)] = glyph[y * win + x];
-    }
+  ranked.sort((a, b) => b.score - a.score);
+  if (!ranked.length || ranked[0].score <= 0) {
+    ranked.unshift({ score: 0, win: size, dx: 0, dy: 0 });
   }
 
-  return { target: placed, win, dx, dy };
+  return ranked.slice(0, keep).map(({ win, dx, dy }) => {
+    const glyph = win === size ? target.slice() : shrink(target, win);
+    const placed = new Float32Array(size * size).fill(255);
+    for (let y = 0; y < win; y += 1) {
+      for (let x = 0; x < win; x += 1) {
+        placed[(y + dy) * size + (x + dx)] = glyph[y * win + x];
+      }
+    }
+    return { target: placed, win, dx, dy };
+  });
 }
 
 function contrastField(target, size) {
@@ -264,8 +294,6 @@ function contrastField(target, size) {
 
 /* ---------- message bit layout ---------- */
 
-/* ---------- message bit layout ---------- */
-
 const URL_FRAGMENT = `${SOURCES_URL}#`;
 
 function digitBudget(version, ecl) {
@@ -276,7 +304,7 @@ function digitBudget(version, ecl) {
 }
 
 function buildMessage(version, ecl, groups) {
-  const { capacityBits, bbit, mbit } = digitBudget(version, ecl);
+  const { capacityBits } = digitBudget(version, ecl);
   const bits = [];
   const push = (value, len) => {
     appendBits(value, len, bits);
@@ -296,7 +324,6 @@ function buildMessage(version, ecl, groups) {
     push(padByte, 8);
 
   if (bits.length !== capacityBits) throw new Error("digit budget mismatch");
-  void mbit;
   return { bits };
 }
 
@@ -386,7 +413,7 @@ function buildMaps(version, ecl) {
   }
   for (let s = 0; s < gridPos.length; s += 1) {
     const { block, indexInBlock } = geom.seqToBlockByte[s >> 3];
-    const bit = 7 - (s & 7);
+    const bit = s & 7;
     if (indexInBlock < geom.dataLen[block]) {
       dataSeq[block][indexInBlock * 8 + bit] = s;
     } else {
@@ -519,15 +546,40 @@ class BitBlock {
 
 /* ---------- QArt solve for one (variant, style, mask) ---------- */
 
-function solveQArt(version, ecl, mask, style, rng) {
+function prepareLayouts(version, ecl, rotation = 0, keep = 1) {
+  const maps = buildMaps(version, ecl);
+  const size = version * 4 + 17;
+  const sampled = resampleTarget(size, rotation);
+  const darkCut = darkThreshold(sampled.target, size);
+  const placements = placeTarget(
+    sampled.target,
+    size,
+    claimableGrid(maps, size),
+    darkCut,
+    keep
+  );
+  return placements.map((placed) => ({
+    size,
+    target: placed.target,
+    darkCut,
+    placement: {
+      win: placed.win,
+      dx: placed.dx,
+      dy: placed.dy,
+      targetWidth: Math.round((sampled.targetWidth * placed.win) / size),
+      targetHeight: Math.round((sampled.targetHeight * placed.win) / size),
+    },
+  }));
+}
+
+function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
   const maps = buildMaps(version, ecl);
   const { geom, gridPos, dataSeq, ecSeq } = maps;
   const size = version * 4 + 17;
-  const rawTarget = resampleTarget(size);
-  const contrast = contrastField(rawTarget, size);
-  const darkCut = darkThreshold(rawTarget, size);
-  const placed = placeTarget(rawTarget, size, claimableGrid(maps, size), darkCut);
-  const target = placed.target;
+  if (!layout) layout = prepareLayouts(version, ecl, rotation)[0];
+  const target = layout.target;
+  const darkCut = layout.darkCut;
+  const contrast = contrastField(target, size);
   const { bbit, groups, mbit } = digitBudget(version, ecl);
   const rsDiv = QrCode.reedSolomonComputeDivisor(geom.eccLen);
 
@@ -538,7 +590,7 @@ function solveQArt(version, ecl, mask, style, rng) {
     const byte = g >> 3;
     for (let j = 0; j < geom.numBlocks; j += 1) {
       if (byte >= geom.chunkStart[j] && byte < geom.chunkStart[j] + geom.dataLen[j]) {
-        const bi = (byte - geom.chunkStart[j]) * 8 + (7 - (g & 7));
+        const bi = (byte - geom.chunkStart[j]) * 8 + (g & 7);
         digitBitsByBlock[j].push({ g, bi });
         break;
       }
@@ -598,20 +650,8 @@ function solveQArt(version, ecl, mask, style, rng) {
 
       for (const candidate of list) {
         const tier = candidate.targ < darkCut ? 2 : 1;
-        if (style === "scatter") {
-          candidate.priority =
-            tier * 1e12 +
-            (Math.floor(rng() * 128) +
-              64 * ((candidate.x + candidate.y) % 2) +
-              64 * (((candidate.x + candidate.y) % 3) % 2)) *
-              256 +
-            Math.floor(rng() * 256);
-        } else {
-          candidate.priority =
-            tier * 1e12 +
-            candidate.contrast * 256 +
-            Math.floor(rng() * 256);
-        }
+        candidate.priority =
+          tier * 1e12 + candidate.contrast * 256 + Math.floor(rng() * 256);
       }
       list.sort((a, b) => b.priority - a.priority);
 
@@ -657,56 +697,20 @@ function solveQArt(version, ecl, mask, style, rng) {
 
       const hardBit = bbit + 10 * i + 3;
       const byte = hardBit >> 3;
-      let marked = false;
       for (let j = 0; j < geom.numBlocks; j += 1) {
         if (byte >= geom.chunkStart[j] && byte < geom.chunkStart[j] + geom.dataLen[j]) {
-          const bi = (byte - geom.chunkStart[j]) * 8 + (7 - (hardBit & 7));
+          const bi = (byte - geom.chunkStart[j]) * 8 + (hardBit & 7);
           const candidate = candidatesByBlock[j].find((c) => !c.isEc && c.bi === bi);
           if (!candidate) throw new Error("hard zero bit unclaimable");
-          if (!candidate.hardZero) {
-            candidate.hardZero = true;
-            marked = true;
-          }
+          if (candidate.hardZero) throw new Error("hard zero retry made no progress");
+          candidate.hardZero = true;
           break;
         }
       }
       invalid += 1;
-      void marked;
     }
     if (invalid === 0) break;
     if (attempt === 39) throw new Error("digit groups never converged");
-  }
-
-  // Second pass: Floyd-Steinberg diffusion over claimed pixels. rsc's
-  // reference only propagates rightward, which we keep for fidelity.
-  if (style === "floyd-steinberg") {
-    const dtarg = new Map();
-    const claimedAt = new Map();
-    for (const candidate of claimed) {
-      dtarg.set(candidate, candidate.targ);
-      claimedAt.set(candidate.y * size + candidate.x, candidate);
-    }
-    const ordered = claimed.slice().sort((a, b) => a.y - b.y || a.x - b.x);
-
-    for (const candidate of ordered) {
-      const targ = dtarg.get(candidate);
-      const dark = targ < darkCut;
-      let pval = dark ? 1 : 0;
-      let v = dark ? 0 : 255;
-      let bval = pval ^ maskBit(mask, candidate.x, candidate.y);
-      if (candidate.hardZero && bval !== 0) {
-        bval ^= 1;
-        pval ^= 1;
-        v ^= 255;
-      }
-
-      blocks[candidate.block].reset(candidate.bitIndex, bval);
-      candidate.pval = pval;
-
-      const err = targ - v;
-      const right = claimedAt.get(candidate.y * size + candidate.x + 1);
-      if (right) dtarg.set(right, dtarg.get(right) + (err * 7) / 16);
-    }
   }
 
   const data = [];
@@ -731,8 +735,16 @@ function solveQArt(version, ecl, mask, style, rng) {
     digits,
     payload: `${SOURCES_URL}#${digits}`,
     controlled: claimed.length,
+    claims: claimed.map((candidate) => ({
+      x: candidate.x,
+      y: candidate.y,
+      targetDark: candidate.targ < darkCut,
+      hardZero: candidate.hardZero,
+    })),
     size,
-    placement: { win: placed.win, dx: placed.dx, dy: placed.dy, darkCut },
+    target,
+    darkCut,
+    placement: layout.placement,
   };
 }
 
@@ -740,7 +752,7 @@ function readMessageBit(blocks, geom, g) {
   const byte = g >> 3;
   for (let j = 0; j < geom.numBlocks; j += 1) {
     if (byte >= geom.chunkStart[j] && byte < geom.chunkStart[j] + geom.dataLen[j]) {
-      const bi = (byte - geom.chunkStart[j]) * 8 + (7 - (g & 7));
+      const bi = (byte - geom.chunkStart[j]) * 8 + (g & 7);
       return (blocks[j].B[bi >> 3] >> (7 - (bi & 7))) & 1;
     }
   }
@@ -749,7 +761,14 @@ function readMessageBit(blocks, geom, g) {
 
 /* ---------- rendering ---------- */
 
-function renderPng(qr, scale) {
+function moduleAt(qr, x, y, rotation) {
+  if (rotation === 90) return qr.modules[qr.size - 1 - x][y];
+  if (rotation === 180) return qr.modules[qr.size - 1 - y][qr.size - 1 - x];
+  if (rotation === 270) return qr.modules[x][qr.size - 1 - y];
+  return qr.modules[y][x];
+}
+
+function renderPng(qr, scale, rotation = 0) {
   const side = (qr.size + 2 * QUIET_MODULES) * scale;
   const png = new PNG({ width: side, height: side });
 
@@ -761,7 +780,7 @@ function renderPng(qr, scale) {
   }
   for (let y = 0; y < qr.size; y += 1) {
     for (let x = 0; x < qr.size; x += 1) {
-      if (!qr.modules[y][x]) continue;
+      if (!moduleAt(qr, x, y, rotation)) continue;
       for (let dy = 0; dy < scale; dy += 1) {
         const py = (y + QUIET_MODULES) * scale + dy;
         for (let dx = 0; dx < scale; dx += 1) {
@@ -783,30 +802,66 @@ function validatePayload(png, expected) {
   return decoded && decoded.data === expected ? decoded.data : null;
 }
 
-function writePng(png, filePath) {
-  fs.writeFileSync(filePath, PNG.sync.write(png));
-}
-
 /* ---------- candidate ladder ---------- */
 
-function renderQArtCandidate(variantKey, style, scale) {
-  const { version, ecl } = VARIANTS[variantKey];
+function targetSimilarity(qr, solved) {
+  const { dx, dy, win } = solved.placement;
+  let darkMatches = 0;
+  let darkTotal = 0;
+  let lightMatches = 0;
+  let lightTotal = 0;
+
+  for (let y = dy; y < dy + win; y += 1) {
+    for (let x = dx; x < dx + win; x += 1) {
+      const targetDark = solved.target[y * solved.size + x] < solved.darkCut;
+      const actualDark = qr.modules[y][x];
+
+      if (targetDark) {
+        darkTotal += 1;
+        if (actualDark) darkMatches += 1;
+      } else {
+        lightTotal += 1;
+        if (!actualDark) lightMatches += 1;
+      }
+    }
+  }
+
+  const darkScore = darkTotal === 0 ? 1 : darkMatches / darkTotal;
+  const lightScore = lightTotal === 0 ? 1 : lightMatches / lightTotal;
+  return 0.75 * darkScore + 0.25 * lightScore;
+}
+
+const SEED_TRIES = 2;
+const PLACEMENT_TRIES = 2;
+
+function renderQArtCandidate(rotation) {
   let best = null;
 
-  for (let mask = 0; mask < 8; mask += 1) {
-    const rng = mulberry32(fnv1a(`${variantKey}:${style}:mask${mask}`));
-    let solved;
-    try {
-      solved = solveQArt(version, ecl, mask, style, rng);
-    } catch (error) {
-      continue;
-    }
-    const qr = new QrCode(version, ecl, solved.data, mask);
-    const png = renderPng(qr, scale);
-    if (!validatePayload(png, solved.payload)) continue;
-    const penalty = qr.getPenaltyScore();
-    if (!best || penalty < best.penalty) {
-      best = { qr, penalty, solved, mask, png };
+  for (const layout of prepareLayouts(VERSION, ECL, rotation, PLACEMENT_TRIES)) {
+    for (let mask = 0; mask < 8; mask += 1) {
+      for (let seed = 0; seed < SEED_TRIES; seed += 1) {
+        const rng = mulberry32(
+          fnv1a(`v5l:rotation${rotation}:mask${mask}:threshold:${seed}`)
+        );
+        let solved;
+        try {
+          solved = solveQArt(VERSION, ECL, mask, rng, rotation, layout);
+        } catch (error) {
+          continue;
+        }
+        const qr = new QrCode(VERSION, ECL, solved.data, mask);
+        const png = renderPng(qr, SCALE, (360 - rotation) % 360);
+        if (!validatePayload(png, solved.payload)) continue;
+        const penalty = qr.getPenaltyScore();
+        const similarity = targetSimilarity(qr, solved);
+        if (
+          !best ||
+          similarity > best.similarity ||
+          (similarity === best.similarity && penalty < best.penalty)
+        ) {
+          best = { qr, penalty, similarity, solved, mask, png, seed };
+        }
+      }
     }
   }
 
@@ -814,96 +869,53 @@ function renderQArtCandidate(variantKey, style, scale) {
   return best;
 }
 
-function renderPlainCandidate(version, ecl, scale) {
-  const urlBytes = Array.from(Buffer.from(SOURCES_URL, "utf8"));
-  const qr = new QrCode(version, ecl, QrSegmentBytes(urlBytes), -1);
-  const png = renderPng(qr, scale);
-  if (!validatePayload(png, SOURCES_URL)) return null;
-
-  return { qr, penalty: qr.getPenaltyScore(), mask: qr.mask, png };
-}
-
-function QrSegmentBytes(bytes) {
-  const bits = [];
-  appendBits(4, 4, bits);
-  appendBits(bytes.length, 8, bits);
-  for (const byte of bytes) appendBits(byte, 8, bits);
-  const capacityBits = QrCode.getNumDataCodewords(VARIANTS_PLAIN_VERSION, Ecc.HIGH) * 8;
-  appendBits(0, Math.min(4, capacityBits - bits.length), bits);
-  appendBits(0, (8 - (bits.length % 8)) % 8, bits);
-  for (let padByte = 0xec; bits.length < capacityBits; padByte ^= 0xec ^ 0x11)
-    appendBits(padByte, 8, bits);
-  return packCodewords(bits);
-}
-
-const VARIANTS_PLAIN_VERSION = 5;
-
 function generate({ outDir = QR_DIR } = {}) {
   fs.mkdirSync(outDir, { recursive: true });
+  removeGeneratedArtifacts(outDir);
   const candidates = [];
 
-  for (const variantKey of Object.keys(VARIANTS)) {
-    for (const style of STYLES) {
-      for (const scale of SCALES) {
-        const rendered = renderQArtCandidate(variantKey, style, scale);
-        if (!rendered) {
-          console.warn(`qr: dropped candidate ${variantKey}/${style}/${scale}px (unsolvable)`);
-          continue;
-        }
-        const { version, ecl } = VARIANTS[variantKey];
-        const file = `qr-${variantKey}-${style}-${scale}px.png`;
-        writePngTo(rendered.png, path.join(outDir, file));
-        candidates.push({
-          kind: "qart",
-          variant: variantKey,
-          version,
-          ecl: ecl === Ecc.LOW ? "L" : ecl === Ecc.MEDIUM ? "M" : "H",
-          style,
-          scale,
-          file,
-          modules: rendered.qr.size,
-          width: rendered.png.width,
-          height: rendered.png.height,
-          payload: rendered.solved.payload,
-          controlled: rendered.solved.controlled,
-          mask: rendered.mask,
-          penalty: rendered.penalty,
-        });
-      }
-    }
-  }
-
-  for (const scale of SCALES) {
-    const rendered = renderPlainCandidate(5, Ecc.HIGH, scale);
+  for (const rotation of ROTATIONS) {
+    const rendered = renderQArtCandidate(rotation);
     if (!rendered) {
-      console.warn(`qr: dropped plain v5h reference at ${scale}px`);
+      console.warn(`qr: dropped V5-L candidate at ${rotation} degrees`);
       continue;
     }
-    const file = `qr-v5h-plain-${scale}px.png`;
-    writePngTo(rendered.png, path.join(outDir, file));
+    const file = `qr-v5l-rotation-${rotation}.png`;
+    writePng(rendered.png, path.join(outDir, file));
     candidates.push({
-      kind: "plain",
-      variant: "v5h",
-      version: 5,
-      ecl: "H",
-      style: "plain",
-      scale,
+      kind: "qart",
+      version: VERSION,
+      ecl: "L",
+      scale: SCALE,
+      rotation,
       file,
       modules: rendered.qr.size,
       width: rendered.png.width,
       height: rendered.png.height,
-      payload: SOURCES_URL,
-      controlled: 0,
+      payload: rendered.solved.payload,
+      controlled: rendered.solved.controlled,
       mask: rendered.mask,
+      seed: rendered.seed,
+      penalty: rendered.penalty,
+      similarity: Number(rendered.similarity.toFixed(6)),
+      placement: rendered.solved.placement,
     });
   }
 
-  const manifest = { generatedAt: new Date().toISOString(), candidates };
+  const manifest = { candidates };
   fs.writeFileSync(path.join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2));
   return manifest;
 }
 
-function writePngTo(png, filePath) {
+function removeGeneratedArtifacts(outDir) {
+  for (const file of fs.readdirSync(outDir)) {
+    if (file === "manifest.json" || file === "index.html" || /^qr-.*\.png$/.test(file)) {
+      fs.rmSync(path.join(outDir, file), { recursive: true, force: true });
+    }
+  }
+}
+
+function writePng(png, filePath) {
   fs.writeFileSync(filePath, PNG.sync.write(png));
 }
 
@@ -931,4 +943,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generate, solveQArt, VARIANTS, STYLES, SCALES, QR_DIR };
+module.exports = { generate, solveQArt, ROTATIONS, QR_DIR };

@@ -5,8 +5,33 @@ const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
 const SRC = path.join(ROOT, "src");
-const OUT = path.join(ROOT, "_build", "devices");
+const DEFAULT_OUT = path.join(ROOT, "_build", "devices");
 const transform = require(path.join(SRC, "transform.js"));
+
+function parseOptions(args) {
+  const options = {};
+
+  for (let i = 0; i < args.length; i += 1) {
+    const flag = args[i];
+    if (flag !== "--out" && flag !== "--qr") {
+      throw new Error(`Unknown preview option: ${flag}`);
+    }
+    const value = args[i + 1];
+    if (!value) throw new Error(`Missing value for ${flag}`);
+    options[flag === "--out" ? "outDir" : "qrPath"] = path.resolve(value);
+    i += 1;
+  }
+
+  return options;
+}
+
+function withQrCandidate(templateSource, qrPath) {
+  if (!qrPath) return templateSource;
+  const base64 = fs.readFileSync(qrPath).toString("base64");
+  const pattern = /(class="ins-footer__qr"\s+src="data:image\/png;base64,)[^"]+(")/;
+  if (!pattern.test(templateSource)) throw new Error("ins-footer__qr image not found");
+  return templateSource.replace(pattern, `$1${base64}$2`);
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -323,7 +348,7 @@ function galleryHtml(deviceTiles) {
 `;
 }
 
-function main() {
+function main({ outDir = DEFAULT_OUT, qrPath = null } = {}) {
   const payload = transform.run(
     {
       trmnl: {
@@ -338,19 +363,20 @@ function main() {
 
   const shared = fs.readFileSync(path.join(SRC, "shared.liquid"), "utf8");
   const sharedHtml = renderTemplate(shared, payload);
-  fs.mkdirSync(OUT, { recursive: true });
+  fs.mkdirSync(outDir, { recursive: true });
 
   for (const [layout, config] of Object.entries(LAYOUTS)) {
-    const templateSource = fs.readFileSync(
+    let templateSource = fs.readFileSync(
       path.join(SRC, `${layout}.liquid`),
       "utf8"
     );
+    if (layout === "full") templateSource = withQrCandidate(templateSource, qrPath);
     const body = renderTemplate(templateSource, payload);
 
     for (const [device, deviceClass] of Object.entries(DEVICES)) {
       const name = `${layout}-${device}.html`;
       fs.writeFileSync(
-        path.join(OUT, name),
+        path.join(outDir, name),
         pageHtml(deviceClass, config, sharedHtml, body)
       );
     }
@@ -377,8 +403,10 @@ ${figures}
     </div>`;
   });
 
-  fs.writeFileSync(path.join(OUT, "gallery.html"), galleryHtml(tiles));
-  console.log(`Wrote 12 device pages and gallery.html to ${path.relative(ROOT, OUT)}`);
+  fs.writeFileSync(path.join(outDir, "gallery.html"), galleryHtml(tiles));
+  console.log(`Wrote 12 device pages and gallery.html to ${path.relative(ROOT, outDir)}`);
 }
 
-main();
+if (require.main === module) main(parseOptions(process.argv.slice(2)));
+
+module.exports = { main };
