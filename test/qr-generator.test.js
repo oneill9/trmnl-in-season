@@ -128,7 +128,8 @@ function sha256(filePath) {
 class QArtCandidateDriver {
   constructor(outDir, entry) {
     this.entry = entry;
-    this.png = readPng(path.join(outDir, entry.file));
+    this.bytes = fs.readFileSync(path.join(outDir, entry.file));
+    this.png = PNG.sync.read(this.bytes);
   }
 
   payloads(png = this.png) {
@@ -334,6 +335,21 @@ class QArtGeneratorDriver {
     );
   }
 
+  candidateAt(rotation) {
+    const entry = this.manifest.candidates.find((candidate) => candidate.rotation === rotation);
+    if (!entry) throw new Error(`missing ${rotation} degree candidate`);
+    return new QArtCandidateDriver(this.outDir, entry);
+  }
+
+  embeddedSourceQr() {
+    const source = fs.readFileSync(path.join(__dirname, "..", "src", "full.liquid"), "utf8");
+    const match = source.match(
+      /class="ins-footer__qr"\s+src="data:image\/png;base64,([^"]+)"/
+    );
+    if (!match) throw new Error("full layout QR not found");
+    return Buffer.from(match[1], "base64");
+  }
+
   solveV5Low({ mask = 0 } = {}) {
     const solved = generateQr.solveQArt(5, Ecc.LOW, mask, () => 0.5);
     const qr = new QrCode(5, Ecc.LOW, solved.data, mask);
@@ -444,6 +460,10 @@ describe("QArt sources QR generator", () => {
         expect(payload.startsWith(`${SOURCES_URL}#`)).toBe(true);
       }
     }
+  });
+
+  test("full layout embeds the physically verified candidate byte for byte", () => {
+    expect(generator.embeddedSourceQr()).toEqual(generator.candidateAt(180).bytes);
   });
 
   test("replaces stale generator artifacts with the current candidate set", () => {
