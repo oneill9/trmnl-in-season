@@ -2,21 +2,21 @@
  * QArt sources QR generator.
  *
  * Implements the QArt technique from https://research.swtch.com/qart:
- * the dithered In Season icon is engineered into the QR payload itself.
+ * a hollow In Season aubergine outline is engineered into the QR payload.
  * The code encodes https://oneill9.github.io/trmnl-in-season/#<digits>
  * (the numeric fragment is silently ignored by browsers) and the digits'
  * bits are the degrees of freedom the picture is drawn with. A
  * Reed-Solomon basis (valid blocks are closed under XOR) plus
- * Gauss-Jordan elimination lets us pin chosen pixels to the dithered
- * image while the code stays a valid, uncorrupted QR symbol.
+ * Gauss-Jordan elimination pins the dark contour and its light outer
+ * clearance while the code stays a valid, uncorrupted QR symbol.
  *
- * The claim loop, BitBlock Gauss-Jordan structure, contrast ordering,
+ * The claim loop, BitBlock Gauss-Jordan structure, constraint ordering,
  * and invalid-group (>= 1000) hard-zero retry follow Russ Cox's reference
  * implementation (rsc.io/qr/qart). QR encoding, masking, penalties, and
  * module topology come from the vendored Nayuki encoder (scripts/vendor/).
  *
  * Usage:
- *   node scripts/generate-qr.js                     write the ladder to _build/qr
+ *   node scripts/generate-qr.js                     write candidates to _build/qr
  *   node scripts/generate-qr.js --inline <file>     inline a candidate into full.liquid
  */
 
@@ -43,7 +43,12 @@ const QUIET_MODULES = 4;
 const VERSION = 5;
 const ECL = Ecc.LOW;
 const SCALE = 2;
-const ROTATIONS = [0, 90, 180, 270];
+const ROTATIONS = [0, 180];
+const TARGET_NEUTRAL = 0;
+const TARGET_DARK = 1;
+const TARGET_LIGHT = 2;
+const OUTLINE_THICKNESS = 2;
+const CLEARANCE_THICKNESS = 1;
 
 /* ---------- deterministic PRNG ---------- */
 
@@ -67,65 +72,152 @@ function mulberry32(seed) {
   };
 }
 
-/* ---------- icon target ---------- */
+/* ---------- three-state outline target ---------- */
 
-let iconLum = null;
+let iconMask = null;
 
-function loadIconLuminance() {
-  if (iconLum) return iconLum;
+function loadIconMask() {
+  if (iconMask) return iconMask;
   const png = PNG.sync.read(fs.readFileSync(ICON_PATH));
-  const { width, height, data } = png;
-  const lum = new Float32Array(width * height);
-
-  let x0 = width;
-  let y0 = height;
+  let x0 = png.width;
+  let y0 = png.height;
   let x1 = -1;
   let y1 = -1;
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const i = y * width + x;
-      const alpha = data[i * 4 + 3] / 255;
-      if (alpha > 0.06) {
-        if (x < x0) x0 = x;
-        if (x > x1) x1 = x;
-        if (y < y0) y0 = y;
-        if (y > y1) y1 = y;
-      }
-      const r = data[i * 4] * alpha + 255 * (1 - alpha);
-      const g = data[i * 4 + 1] * alpha + 255 * (1 - alpha);
-      const b = data[i * 4 + 2] * alpha + 255 * (1 - alpha);
-      lum[i] = 0.299 * r + 0.587 * g + 0.114 * b;
+
+  for (let y = 0; y < png.height; y += 1) {
+    for (let x = 0; x < png.width; x += 1) {
+      if (png.data[(y * png.width + x) * 4 + 3] <= 15) continue;
+      x0 = Math.min(x0, x);
+      y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x);
+      y1 = Math.max(y1, y);
     }
   }
   if (x1 < 0) throw new Error("icon has no visible content");
 
-  const pad = 4;
-  x0 = Math.max(0, x0 - pad);
-  y0 = Math.max(0, y0 - pad);
-  x1 = Math.min(width - 1, x1 + pad);
-  y1 = Math.min(height - 1, y1 + pad);
-  const cropW = x1 - x0 + 1;
-  const cropH = y1 - y0 + 1;
-  const crop = new Float32Array(cropW * cropH);
-  for (let y = 0; y < cropH; y += 1) {
-    for (let x = 0; x < cropW; x += 1) {
-      crop[y * cropW + x] = lum[(y0 + y) * width + (x0 + x)];
+  const width = x1 - x0 + 1;
+  const height = y1 - y0 + 1;
+  const alpha = new Uint8Array(width * height);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      alpha[y * width + x] = png.data[((y0 + y) * png.width + x0 + x) * 4 + 3];
     }
   }
 
-  iconLum = { width: cropW, height: cropH, lum: crop };
-  return iconLum;
+  iconMask = { width, height, alpha };
+  return iconMask;
 }
 
-function rotateTarget(target, size, rotation) {
-  if (rotation === 0) return target;
-  const rotated = new Float32Array(target.length);
+function resampleSilhouette(width, height) {
+  const source = loadIconMask();
+  const sampled = new Uint8Array(width * height);
 
+  for (let y = 0; y < height; y += 1) {
+    const y0 = Math.floor((y * source.height) / height);
+    const y1 = Math.max(y0 + 1, Math.floor(((y + 1) * source.height) / height));
+    for (let x = 0; x < width; x += 1) {
+      const x0 = Math.floor((x * source.width) / width);
+      const x1 = Math.max(x0 + 1, Math.floor(((x + 1) * source.width) / width));
+      let alpha = 0;
+      let count = 0;
+      for (let sy = y0; sy < y1; sy += 1) {
+        for (let sx = x0; sx < x1; sx += 1) {
+          alpha += source.alpha[sy * source.width + sx];
+          count += 1;
+        }
+      }
+      sampled[y * width + x] = alpha / count >= 64 ? 1 : 0;
+    }
+  }
+
+  return sampled;
+}
+
+function erodeMask(mask, width, height, iterations) {
+  let current = mask.slice();
+  for (let iteration = 0; iteration < iterations; iteration += 1) {
+    const eroded = new Uint8Array(mask.length);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        if (!current[y * width + x]) continue;
+        let survives = true;
+        for (let dy = -1; dy <= 1 && survives; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= width || ny >= height || !current[ny * width + nx]) {
+              survives = false;
+              break;
+            }
+          }
+        }
+        if (survives) eroded[y * width + x] = 1;
+      }
+    }
+    current = eroded;
+  }
+  return current;
+}
+
+function dilateMask(mask, width, height, iterations) {
+  let current = mask.slice();
+  for (let iteration = 0; iteration < iterations; iteration += 1) {
+    const dilated = current.slice();
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        if (!current[y * width + x]) continue;
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
+              dilated[ny * width + nx] = 1;
+            }
+          }
+        }
+      }
+    }
+    current = dilated;
+  }
+  return current;
+}
+
+function buildLocalVisual(bodyHeight) {
+  const source = loadIconMask();
+  const bodyWidth = Math.max(1, Math.round((bodyHeight * source.width) / source.height));
+  const width = bodyWidth + 2 * CLEARANCE_THICKNESS;
+  const height = bodyHeight + 2 * CLEARANCE_THICKNESS;
+  const body = new Uint8Array(width * height);
+  const sampled = resampleSilhouette(bodyWidth, bodyHeight);
+  for (let y = 0; y < bodyHeight; y += 1) {
+    for (let x = 0; x < bodyWidth; x += 1) {
+      body[(y + CLEARANCE_THICKNESS) * width + x + CLEARANCE_THICKNESS] =
+        sampled[y * bodyWidth + x];
+    }
+  }
+
+  const interior = erodeMask(body, width, height, OUTLINE_THICKNESS);
+  const outline = new Uint8Array(body.length);
+  for (let i = 0; i < body.length; i += 1) outline[i] = body[i] && !interior[i] ? 1 : 0;
+  const dilated = dilateMask(outline, width, height, CLEARANCE_THICKNESS);
+  const states = new Uint8Array(body.length);
+  let interiorModules = 0;
+  for (let i = 0; i < states.length; i += 1) {
+    if (outline[i]) states[i] = TARGET_DARK;
+    else if (dilated[i] && !body[i]) states[i] = TARGET_LIGHT;
+    if (interior[i]) interiorModules += 1;
+  }
+
+  return { states, width, height, bodyWidth, bodyHeight, interiorModules };
+}
+
+function rotateGrid(values, size, rotation) {
+  if (rotation === 0) return values.slice();
+  const rotated = new values.constructor(values.length);
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
       let targetX;
       let targetY;
-
       if (rotation === 90) {
         targetX = size - 1 - y;
         targetY = x;
@@ -136,160 +228,146 @@ function rotateTarget(target, size, rotation) {
         targetX = y;
         targetY = size - 1 - x;
       }
-
-      rotated[targetY * size + targetX] = target[y * size + x];
+      rotated[targetY * size + targetX] = values[y * size + x];
     }
   }
-
   return rotated;
 }
 
-function resampleTarget(size, rotation = 0) {
-  const { width, height, lum } = loadIconLuminance();
-  const target = new Float32Array(size * size).fill(255);
-  const targetWidth = Math.max(1, Math.round((size * width) / height));
-  const targetHeight = size;
-  const offsetX = Math.floor((size - targetWidth) / 2);
+function matrixAtOutput(matrix, size, x, y, rotation) {
+  if (rotation === 90) return matrix[size - 1 - x][y];
+  if (rotation === 180) return matrix[size - 1 - y][size - 1 - x];
+  if (rotation === 270) return matrix[x][size - 1 - y];
+  return matrix[y][x];
+}
 
-  for (let y = 0; y < targetHeight; y += 1) {
-    const y0 = Math.floor((y * height) / targetHeight);
-    const y1 = Math.max(y0 + 1, Math.floor(((y + 1) * height) / targetHeight));
-    for (let x = 0; x < targetWidth; x += 1) {
-      const x0 = Math.floor((x * width) / targetWidth);
-      const x1 = Math.max(x0 + 1, Math.floor(((x + 1) * width) / targetWidth));
-      let sum = 0;
-      let count = 0;
-      for (let sy = y0; sy < y1; sy += 1) {
-        for (let sx = x0; sx < x1; sx += 1) {
-          sum += lum[sy * width + sx];
-          count += 1;
-        }
+function flatAtOutput(values, size, x, y, rotation) {
+  if (rotation === 90) return values[(size - 1 - x) * size + y];
+  if (rotation === 180) return values[(size - 1 - y) * size + size - 1 - x];
+  if (rotation === 270) return values[x * size + size - 1 - y];
+  return values[y * size + x];
+}
+
+function adjustableGrid(maps, version, ecl) {
+  const adjustable = new Uint8Array(maps.gridPos.length ? (version * 4 + 17) ** 2 : 0);
+  const { bbit, mbit } = digitBudget(version, ecl);
+
+  for (let g = bbit; g < mbit; g += 1) {
+    const byte = g >> 3;
+    for (let block = 0; block < maps.geom.numBlocks; block += 1) {
+      if (
+        byte < maps.geom.chunkStart[block] ||
+        byte >= maps.geom.chunkStart[block] + maps.geom.dataLen[block]
+      ) {
+        continue;
       }
-      target[y * size + offsetX + x] = sum / count;
+      const bit = (byte - maps.geom.chunkStart[block]) * 8 + (g & 7);
+      const sequence = maps.dataSeq[block][bit];
+      if (sequence >= 0) {
+        const { x, y } = maps.gridPos[sequence];
+        adjustable[y * (version * 4 + 17) + x] = 1;
+      }
+      break;
+    }
+  }
+  for (const block of maps.ecSeq) {
+    for (const sequence of block) {
+      if (sequence < 0) continue;
+      const { x, y } = maps.gridPos[sequence];
+      adjustable[y * (version * 4 + 17) + x] = 1;
     }
   }
 
-  return {
-    target: rotateTarget(target, size, rotation),
-    targetWidth,
-    targetHeight,
-  };
+  return adjustable;
 }
 
-function darkThreshold(target, size) {
-  // The glyph composites well above pure-black luminance (coral on white
-  // lands around 129), so the dark/light midpoint comes from the data:
-  // mean luminance of the visibly dark half of the grid.
-  const sorted = Array.from(target).sort((a, b) => a - b);
-  const darkMean =
-    sorted.slice(0, Math.max(1, Math.floor(sorted.length * 0.35))).reduce(
-      (sum, v) => sum + v,
-      0
-    ) / Math.max(1, Math.floor(sorted.length * 0.35));
-  const background = sorted[sorted.length - 1];
-  return Math.min(192, Math.max(96, (darkMean + background) / 2));
-}
-
-/* ---------- picture placement over the claimable canvas ---------- */
-
-function claimableGrid(maps, size) {
-  const claimable = new Uint8Array(size * size);
-  for (const { x, y } of maps.gridPos) claimable[y * size + x] = 1;
-  return claimable;
-}
-
-function placeTarget(target, size, claimable, darkCut, keep = 1) {
-  // Scale the trimmed glyph to several window sizes and slide it over the
-  // symbol (rsc's Dx/Dy panning), ranking placements by how many glyph-dark
-  // pixels land on claimable modules. Pixels outside the window render as
-  // background (light target).
-  const toDark = (values, n) => {
-    const bits = new Uint8Array(n * n);
-    for (let i = 0; i < n * n; i += 1) bits[i] = values[i] < darkCut ? 1 : 0;
-    return bits;
-  };
-  const shrink = (values, outSize) => {
-    const out = new Float32Array(outSize * outSize);
-    for (let y = 0; y < outSize; y += 1) {
-      const sy0 = Math.floor((y * size) / outSize);
-      const sy1 = Math.max(sy0 + 1, Math.floor(((y + 1) * size) / outSize));
-      for (let x = 0; x < outSize; x += 1) {
-        const sx0 = Math.floor((x * size) / outSize);
-        const sx1 = Math.max(sx0 + 1, Math.floor(((x + 1) * size) / outSize));
-        let sum = 0;
-        let count = 0;
-        for (let sy = sy0; sy < sy1; sy += 1) {
-          for (let sx = sx0; sx < sx1; sx += 1) {
-            sum += values[sy * size + sx];
-            count += 1;
-          }
-        }
-        out[y * outSize + x] = sum / count;
-      }
-    }
-    return out;
-  };
-
-  const ranked = [];
-  for (let win = size - 8; win >= 12; win -= 2) {
-    const darkW = toDark(shrink(target, win), win);
-    for (let dy = 0; dy + win <= size; dy += 1) {
-      for (let dx = 0; dx + win <= size; dx += 1) {
-        let score = 0;
-        for (let y = 0; y < win; y += 1) {
-          for (let x = 0; x < win; x += 1) {
-            if (!darkW[y * win + x]) continue;
-            score += claimable[(y + dy) * size + (x + dx)] ? 1 : -3;
-          }
-        }
-        ranked.push({ score, win, dx, dy });
-      }
-    }
-  }
-  ranked.sort((a, b) => b.score - a.score);
-  if (!ranked.length || ranked[0].score <= 0) {
-    ranked.unshift({ score: 0, win: size, dx: 0, dy: 0 });
-  }
-
-  return ranked.slice(0, keep).map(({ win, dx, dy }) => {
-    const glyph = win === size ? target.slice() : shrink(target, win);
-    const placed = new Float32Array(size * size).fill(255);
-    for (let y = 0; y < win; y += 1) {
-      for (let x = 0; x < win; x += 1) {
-        placed[(y + dy) * size + (x + dx)] = glyph[y * win + x];
-      }
-    }
-    return { target: placed, win, dx, dy };
-  });
-}
-
-function contrastField(target, size) {
-  const field = new Float32Array(size * size);
-  const del = 5;
-
+function visualRows(states, size) {
+  const marks = ["-", "#", "."];
+  const rows = [];
   for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      let sum = 0;
-      let sumSq = 0;
-      let count = 0;
-      for (let dy = -del; dy <= del; dy += 1) {
-        const ny = y + dy;
-        if (ny < 0 || ny >= size) continue;
-        for (let dx = -del; dx <= del; dx += 1) {
-          const nx = x + dx;
-          if (nx < 0 || nx >= size) continue;
-          const v = target[ny * size + nx];
-          sum += v;
-          sumSq += v * v;
-          count += 1;
+    let row = "";
+    for (let x = 0; x < size; x += 1) row += marks[states[y * size + x]];
+    rows.push(row);
+  }
+  return rows;
+}
+
+function placeVisualTargets(version, ecl, rotation, maps, keep) {
+  const size = version * 4 + 17;
+  const renderRotation = (360 - rotation) % 360;
+  const adjustable = adjustableGrid(maps, version, ecl);
+  const layouts = [];
+
+  for (let bodyHeight = 27; bodyHeight >= 12; bodyHeight -= 1) {
+    const local = buildLocalVisual(bodyHeight);
+    if (local.interiorModules < 8) continue;
+    const placements = [];
+    for (let dy = 0; dy + local.height <= size; dy += 1) {
+      for (let dx = 0; dx + local.width <= size; dx += 1) {
+        const states = new Uint8Array(size * size);
+        let x0 = size;
+        let y0 = size;
+        let x1 = -1;
+        let y1 = -1;
+        let functionOverlap = false;
+        let adjustableScore = 0;
+        let targetWeight = 0;
+
+        for (let y = 0; y < local.height; y += 1) {
+          for (let x = 0; x < local.width; x += 1) {
+            const state = local.states[y * local.width + x];
+            if (state === TARGET_NEUTRAL) continue;
+            const targetX = dx + x;
+            const targetY = dy + y;
+            states[targetY * size + targetX] = state;
+            if (state === TARGET_DARK) {
+              x0 = Math.min(x0, targetX);
+              y0 = Math.min(y0, targetY);
+              x1 = Math.max(x1, targetX);
+              y1 = Math.max(y1, targetY);
+            }
+            if (matrixAtOutput(maps.isFunction, size, targetX, targetY, renderRotation)) {
+              functionOverlap = true;
+            }
+            const weight = state === TARGET_DARK ? 2 : 1;
+            targetWeight += weight;
+            if (flatAtOutput(adjustable, size, targetX, targetY, renderRotation)) {
+              adjustableScore += weight;
+            }
+          }
         }
+        if (functionOverlap || x1 < 0) continue;
+
+        const center = (size - 1) / 2;
+        const centerX = Math.abs((x0 + x1) / 2 - center);
+        const centerY = Math.abs((y0 + y1) / 2 - center);
+        const padding = Math.min(x0, y0, size - 1 - x1, size - 1 - y1);
+        if (padding < 1 || centerX > 1 || centerY > 1) continue;
+
+        placements.push({
+          finalStates: states,
+          score: adjustableScore / targetWeight,
+          centerOffset: centerX + centerY,
+          placement: {
+            dx,
+            dy,
+            targetWidth: local.bodyWidth,
+            targetHeight: local.bodyHeight,
+            outlineBounds: { x0, y0, x1, y1 },
+          },
+        });
       }
-      const avg = sum / count;
-      field[y * size + x] = sumSq / count - avg * avg;
     }
+    placements.sort((a, b) => b.score - a.score || a.centerOffset - b.centerOffset);
+    if (placements.length > 0) layouts.push(placements[0]);
   }
 
-  return field;
+  return layouts.slice(0, keep).map((layout) => ({
+    size,
+    states: rotateGrid(layout.finalStates, size, rotation),
+    finalStates: layout.finalStates,
+    placement: layout.placement,
+  }));
 }
 
 /* ---------- message bit layout ---------- */
@@ -402,7 +480,7 @@ function codewordBitPositions(version, ecl) {
 
 function buildMaps(version, ecl) {
   const geom = blockGeometry(version, ecl);
-  const { positions } = codewordBitPositions(version, ecl);
+  const { positions, isFunction } = codewordBitPositions(version, ecl);
   const gridPos = positions.slice(0, geom.rawBytes * 8);
 
   const dataSeq = [];
@@ -421,7 +499,7 @@ function buildMaps(version, ecl) {
     }
   }
 
-  return { geom, gridPos, dataSeq, ecSeq };
+  return { geom, gridPos, dataSeq, ecSeq, isFunction };
 }
 
 function maskBit(mask, x, y) {
@@ -548,28 +626,7 @@ class BitBlock {
 
 function prepareLayouts(version, ecl, rotation = 0, keep = 1) {
   const maps = buildMaps(version, ecl);
-  const size = version * 4 + 17;
-  const sampled = resampleTarget(size, rotation);
-  const darkCut = darkThreshold(sampled.target, size);
-  const placements = placeTarget(
-    sampled.target,
-    size,
-    claimableGrid(maps, size),
-    darkCut,
-    keep
-  );
-  return placements.map((placed) => ({
-    size,
-    target: placed.target,
-    darkCut,
-    placement: {
-      win: placed.win,
-      dx: placed.dx,
-      dy: placed.dy,
-      targetWidth: Math.round((sampled.targetWidth * placed.win) / size),
-      targetHeight: Math.round((sampled.targetHeight * placed.win) / size),
-    },
-  }));
+  return placeVisualTargets(version, ecl, rotation, maps, keep);
 }
 
 function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
@@ -577,9 +634,8 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
   const { geom, gridPos, dataSeq, ecSeq } = maps;
   const size = version * 4 + 17;
   if (!layout) layout = prepareLayouts(version, ecl, rotation)[0];
-  const target = layout.target;
-  const darkCut = layout.darkCut;
-  const contrast = contrastField(target, size);
+  if (!layout) throw new Error("no safe outline placement");
+  const states = layout.states;
   const { bbit, groups, mbit } = digitBudget(version, ecl);
   const rsDiv = QrCode.reedSolomonComputeDivisor(geom.eccLen);
 
@@ -597,7 +653,8 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
     }
   }
 
-  // Candidates: digit bits + all EC bits, with grid position, target, contrast.
+  // The contour is claimed first, then its light clearance. Neutral modules
+  // receive deterministic filler values only after the visual target.
   const candidatesByBlock = [];
   for (let j = 0; j < geom.numBlocks; j += 1) {
     const list = [];
@@ -611,8 +668,7 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
         isEc: false,
         x,
         y,
-        targ: target[y * size + x],
-        contrast: contrast[y * size + x],
+        state: states[y * size + x],
         hardZero: false,
       });
     }
@@ -626,8 +682,7 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
         isEc: true,
         x,
         y,
-        targ: target[y * size + x],
-        contrast: contrast[y * size + x],
+        state: states[y * size + x],
         hardZero: false,
       });
     }
@@ -649,9 +704,12 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
       const list = candidatesByBlock[j];
 
       for (const candidate of list) {
-        const tier = candidate.targ < darkCut ? 2 : 1;
-        candidate.priority =
-          tier * 1e12 + candidate.contrast * 256 + Math.floor(rng() * 256);
+        const tier =
+          candidate.state === TARGET_DARK ? 3 : candidate.state === TARGET_LIGHT ? 2 : 1;
+        candidate.targetDark =
+          candidate.state === TARGET_DARK ||
+          (candidate.state === TARGET_NEUTRAL && rng() < 0.5);
+        candidate.priority = tier * 1e12 + Math.floor(rng() * 65536);
       }
       list.sort((a, b) => b.priority - a.priority);
 
@@ -672,7 +730,7 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
 
       for (const candidate of list) {
         const bi = candidate.isEc ? nd * 8 + candidate.e : candidate.bi;
-        let bval = candidate.targ < darkCut ? 1 : 0;
+        let bval = candidate.targetDark ? 1 : 0;
         bval ^= maskBit(mask, candidate.x, candidate.y);
         if (candidate.hardZero) bval = 0;
         if (bb.canSet(bi, bval)) {
@@ -738,12 +796,12 @@ function solveQArt(version, ecl, mask, rng, rotation = 0, layout = null) {
     claims: claimed.map((candidate) => ({
       x: candidate.x,
       y: candidate.y,
-      targetDark: candidate.targ < darkCut,
+      targetDark: candidate.targetDark,
       hardZero: candidate.hardZero,
     })),
     size,
-    target,
-    darkCut,
+    states,
+    finalStates: layout.finalStates,
     placement: layout.placement,
   };
 }
@@ -802,46 +860,49 @@ function validatePayload(png, expected) {
   return decoded && decoded.data === expected ? decoded.data : null;
 }
 
-/* ---------- candidate ladder ---------- */
+/* ---------- review candidates ---------- */
 
-function targetSimilarity(qr, solved) {
-  const { dx, dy, win } = solved.placement;
-  let darkMatches = 0;
-  let darkTotal = 0;
-  let lightMatches = 0;
-  let lightTotal = 0;
+function visualMetrics(qr, solved) {
+  let outlineMatches = 0;
+  let outlineTotal = 0;
+  let clearanceMatches = 0;
+  let clearanceTotal = 0;
 
-  for (let y = dy; y < dy + win; y += 1) {
-    for (let x = dx; x < dx + win; x += 1) {
-      const targetDark = solved.target[y * solved.size + x] < solved.darkCut;
-      const actualDark = qr.modules[y][x];
-
-      if (targetDark) {
-        darkTotal += 1;
-        if (actualDark) darkMatches += 1;
-      } else {
-        lightTotal += 1;
-        if (!actualDark) lightMatches += 1;
-      }
+  for (let i = 0; i < solved.states.length; i += 1) {
+    const state = solved.states[i];
+    if (state === TARGET_NEUTRAL) continue;
+    const actualDark = qr.modules[Math.floor(i / solved.size)][i % solved.size];
+    if (state === TARGET_DARK) {
+      outlineTotal += 1;
+      if (actualDark) outlineMatches += 1;
+    } else {
+      clearanceTotal += 1;
+      if (!actualDark) clearanceMatches += 1;
     }
   }
 
-  const darkScore = darkTotal === 0 ? 1 : darkMatches / darkTotal;
-  const lightScore = lightTotal === 0 ? 1 : lightMatches / lightTotal;
-  return 0.75 * darkScore + 0.25 * lightScore;
+  return {
+    outlineMatches,
+    outlineTotal,
+    clearanceMatches,
+    clearanceTotal,
+    outlineComplete: outlineMatches === outlineTotal,
+    clearanceRate: clearanceTotal === 0 ? 1 : clearanceMatches / clearanceTotal,
+  };
 }
 
-const SEED_TRIES = 2;
-const PLACEMENT_TRIES = 2;
+const SEED_TRIES = 1;
+const PLACEMENT_TRIES = 16;
 
 function renderQArtCandidate(rotation) {
   let best = null;
+  let closest = null;
 
   for (const layout of prepareLayouts(VERSION, ECL, rotation, PLACEMENT_TRIES)) {
     for (let mask = 0; mask < 8; mask += 1) {
       for (let seed = 0; seed < SEED_TRIES; seed += 1) {
         const rng = mulberry32(
-          fnv1a(`v5l:rotation${rotation}:mask${mask}:threshold:${seed}`)
+          fnv1a(`v5l:rotation${rotation}:mask${mask}:outline:${seed}`)
         );
         let solved;
         try {
@@ -852,19 +913,42 @@ function renderQArtCandidate(rotation) {
         const qr = new QrCode(VERSION, ECL, solved.data, mask);
         const png = renderPng(qr, SCALE, (360 - rotation) % 360);
         if (!validatePayload(png, solved.payload)) continue;
+        const metrics = visualMetrics(qr, solved);
+        if (!metrics.outlineComplete || metrics.clearanceRate < 0.95) {
+          const misses =
+            metrics.outlineTotal -
+            metrics.outlineMatches +
+            metrics.clearanceTotal -
+            metrics.clearanceMatches;
+          if (!closest || misses < closest.misses) {
+            closest = { misses, metrics, placement: solved.placement, mask, seed };
+          }
+          continue;
+        }
         const penalty = qr.getPenaltyScore();
-        const similarity = targetSimilarity(qr, solved);
+        const targetArea = solved.placement.targetWidth * solved.placement.targetHeight;
         if (
           !best ||
-          similarity > best.similarity ||
-          (similarity === best.similarity && penalty < best.penalty)
+          targetArea > best.targetArea ||
+          (targetArea === best.targetArea && metrics.clearanceRate > best.metrics.clearanceRate) ||
+          (targetArea === best.targetArea &&
+            metrics.clearanceRate === best.metrics.clearanceRate &&
+            penalty < best.penalty)
         ) {
-          best = { qr, penalty, similarity, solved, mask, png, seed };
+          best = { qr, penalty, metrics, targetArea, solved, mask, png, seed };
         }
       }
     }
   }
 
+  if (!best && closest) {
+    console.warn(
+      `qr: closest ${rotation} degree outline missed ${closest.misses} modules ` +
+        `(outline ${closest.metrics.outlineMatches}/${closest.metrics.outlineTotal}, ` +
+        `clearance ${closest.metrics.clearanceMatches}/${closest.metrics.clearanceTotal}, ` +
+        `height ${closest.placement.targetHeight}, mask ${closest.mask}, seed ${closest.seed})`
+    );
+  }
   if (!best) return null;
   return best;
 }
@@ -897,8 +981,21 @@ function generate({ outDir = QR_DIR } = {}) {
       mask: rendered.mask,
       seed: rendered.seed,
       penalty: rendered.penalty,
-      similarity: Number(rendered.similarity.toFixed(6)),
+      similarity: Number(
+        (
+          (rendered.metrics.outlineMatches + rendered.metrics.clearanceMatches) /
+          (rendered.metrics.outlineTotal + rendered.metrics.clearanceTotal)
+        ).toFixed(6)
+      ),
       placement: rendered.solved.placement,
+      visual: {
+        outlineThickness: OUTLINE_THICKNESS,
+        clearanceThickness: CLEARANCE_THICKNESS,
+        outlineModules: rendered.metrics.outlineTotal,
+        clearanceModules: rendered.metrics.clearanceTotal,
+        clearanceMatches: rendered.metrics.clearanceMatches,
+        rows: visualRows(rendered.solved.finalStates, rendered.solved.size),
+      },
     });
   }
 

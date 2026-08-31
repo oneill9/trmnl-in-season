@@ -13,7 +13,7 @@ class DevicePreviewDriver {
       this.repositoryRoot,
       "_build",
       "qr",
-      "qr-v5l-rotation-270.png"
+      "qr-v5l-rotation-0.png"
     );
   }
 

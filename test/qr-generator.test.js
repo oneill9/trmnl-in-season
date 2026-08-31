@@ -19,7 +19,7 @@ const generateQr = require("../scripts/generate-qr.js");
 
 const SOURCES_URL = "https://oneill9.github.io/trmnl-in-season/";
 const QART_PAYLOAD = /^https:\/\/oneill9\.github\.io\/trmnl-in-season\/#\d+$/;
-const ROTATIONS = [0, 90, 180, 270];
+const ROTATIONS = [0, 180];
 
 function readPng(filePath) {
   return PNG.sync.read(fs.readFileSync(filePath));
@@ -141,6 +141,166 @@ class QArtCandidateDriver {
   cameraPayloads() {
     return this.payloads(rotateClockwise(cameraRender(this.png)));
   }
+
+  visualRows() {
+    return this.entry.visual.rows.map((row) => row.split(""));
+  }
+
+  modulesMarked(mark) {
+    const modules = [];
+    const rows = this.visualRows();
+    for (let y = 0; y < rows.length; y += 1) {
+      for (let x = 0; x < rows[y].length; x += 1) {
+        if (rows[y][x] === mark) modules.push({ x, y });
+      }
+    }
+    return modules;
+  }
+
+  outlineBounds() {
+    const outline = this.modulesMarked("#");
+    return {
+      x0: Math.min(...outline.map(({ x }) => x)),
+      y0: Math.min(...outline.map(({ y }) => y)),
+      x1: Math.max(...outline.map(({ x }) => x)),
+      y1: Math.max(...outline.map(({ y }) => y)),
+    };
+  }
+
+  boundaryPadding() {
+    const { x0, y0, x1, y1 } = this.outlineBounds();
+    return Math.min(x0, y0, this.entry.modules - 1 - x1, this.entry.modules - 1 - y1);
+  }
+
+  centerOffset() {
+    const { x0, y0, x1, y1 } = this.outlineBounds();
+    const center = (this.entry.modules - 1) / 2;
+    return {
+      x: Math.abs((x0 + x1) / 2 - center),
+      y: Math.abs((y0 + y1) / 2 - center),
+    };
+  }
+
+  functionModuleOverlaps() {
+    const dataLength = QrCode.getNumDataCodewords(this.entry.version, Ecc.LOW);
+    const qr = new QrCode(
+      this.entry.version,
+      Ecc.LOW,
+      new Array(dataLength).fill(0),
+      0
+    );
+    const rotation = (360 - this.entry.rotation) % 360;
+    const isFunction = ({ x, y }) => {
+      if (rotation === 90) return qr.isFunction[qr.size - 1 - x][y];
+      if (rotation === 180) return qr.isFunction[qr.size - 1 - y][qr.size - 1 - x];
+      if (rotation === 270) return qr.isFunction[x][qr.size - 1 - y];
+      return qr.isFunction[y][x];
+    };
+    return [...this.modulesMarked("#"), ...this.modulesMarked(".")].filter(isFunction);
+  }
+
+  outlineComponents() {
+    const outline = new Set(this.modulesMarked("#").map(({ x, y }) => `${x},${y}`));
+    let components = 0;
+
+    while (outline.size > 0) {
+      components += 1;
+      const pending = [outline.values().next().value];
+      outline.delete(pending[0]);
+      while (pending.length > 0) {
+        const [x, y] = pending.pop().split(",").map(Number);
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            if (dx === 0 && dy === 0) continue;
+            const neighbor = `${x + dx},${y + dy}`;
+            if (!outline.delete(neighbor)) continue;
+            pending.push(neighbor);
+          }
+        }
+      }
+    }
+
+    return components;
+  }
+
+  outsideModules() {
+    const rows = this.visualRows();
+    const size = rows.length;
+    const outside = new Set();
+    const pending = [];
+    const add = (x, y) => {
+      const key = `${x},${y}`;
+      if (x < 0 || y < 0 || x >= size || y >= size) return;
+      if (rows[y][x] === "#" || outside.has(key)) return;
+      outside.add(key);
+      pending.push({ x, y });
+    };
+
+    for (let i = 0; i < size; i += 1) {
+      add(i, 0);
+      add(i, size - 1);
+      add(0, i);
+      add(size - 1, i);
+    }
+    while (pending.length > 0) {
+      const { x, y } = pending.pop();
+      add(x - 1, y);
+      add(x + 1, y);
+      add(x, y - 1);
+      add(x, y + 1);
+    }
+
+    return outside;
+  }
+
+  enclosedNeutralModules() {
+    const outside = this.outsideModules();
+    return this.modulesMarked("-").filter(({ x, y }) => !outside.has(`${x},${y}`));
+  }
+
+  minimumOutlineThickness() {
+    const outside = [...this.outsideModules()].map((key) => key.split(",").map(Number));
+    let minimum = Infinity;
+    for (const { x, y } of this.enclosedNeutralModules()) {
+      for (const [outsideX, outsideY] of outside) {
+        minimum = Math.min(
+          minimum,
+          Math.max(Math.abs(x - outsideX), Math.abs(y - outsideY)) - 1
+        );
+      }
+    }
+    return minimum;
+  }
+
+  clearanceIsOneModuleWide() {
+    const rows = this.visualRows();
+    return this.modulesMarked(".").every(({ x, y }) => {
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          if (rows[y + dy]?.[x + dx] === "#") return true;
+        }
+      }
+      return false;
+    });
+  }
+
+  renderedModuleIsDark({ x, y }) {
+    const quietModules = (this.png.width / this.entry.scale - this.entry.modules) / 2;
+    const pixelX = Math.round((x + quietModules + 0.5) * this.entry.scale - 0.5);
+    const pixelY = Math.round((y + quietModules + 0.5) * this.entry.scale - 0.5);
+    const offset = (pixelY * this.png.width + pixelX) * 4;
+    return this.png.data[offset] < 128;
+  }
+
+  renderedOutlineMismatches() {
+    return this.modulesMarked("#").filter((module) => !this.renderedModuleIsDark(module));
+  }
+
+  renderedClearanceRate() {
+    const clearance = this.modulesMarked(".");
+    const matches = clearance.filter((module) => !this.renderedModuleIsDark(module));
+    return matches.length / clearance.length;
+  }
 }
 
 class QArtGeneratorDriver {
@@ -201,6 +361,26 @@ describe("QArt sources QR generator", () => {
 
   test("every claimed coordinate renders the requested target module", () => {
     expect(generator.solveV5Low().claimedTargetMismatches()).toHaveLength(0);
+  });
+
+  test("renders a complete centred hollow outline clear of fixed QR structures", () => {
+    for (const candidate of generator.candidates()) {
+      expect(candidate.entry.visual).toMatchObject({
+        outlineThickness: 2,
+        clearanceThickness: 1,
+      });
+      expect(candidate.visualRows()).toHaveLength(candidate.entry.modules);
+      expect(candidate.outlineComponents()).toBe(1);
+      expect(candidate.enclosedNeutralModules().length).toBeGreaterThanOrEqual(8);
+      expect(candidate.minimumOutlineThickness()).toBeGreaterThanOrEqual(2);
+      expect(candidate.clearanceIsOneModuleWide()).toBe(true);
+      expect(candidate.boundaryPadding()).toBeGreaterThanOrEqual(1);
+      expect(candidate.centerOffset().x).toBeLessThanOrEqual(1);
+      expect(candidate.centerOffset().y).toBeLessThanOrEqual(1);
+      expect(candidate.functionModuleOverlaps()).toHaveLength(0);
+      expect(candidate.renderedOutlineMismatches()).toHaveLength(0);
+      expect(candidate.renderedClearanceRate()).toBeGreaterThanOrEqual(0.95);
+    }
   });
 
   test("emits one deterministic V5-L review candidate per rotation", () => {
