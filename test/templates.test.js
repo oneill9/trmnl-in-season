@@ -62,6 +62,37 @@ class FullScreenLayoutDriver {
     return this.markup.includes("{{ source_page_url | qr_code }}");
   }
 
+  hasSourcesFooter() {
+    return (
+      this.markup.includes('class="ins-footer') &&
+      this.markup.includes("Sources and methodology") &&
+      /class="ins-footer__qr"\s+src="data:image\/png;base64,[A-Za-z0-9+/=]{100,}"/.test(
+        this.markup
+      )
+    );
+  }
+
+  hasFooterOnlyInDataStates() {
+    const footer = this.markup.indexOf('class="ins-footer');
+
+    return (
+      footer > this.markup.indexOf("{% if has_data %}") &&
+      footer < this.markup.indexOf('class="ins-empty') &&
+      footer < this.markup.indexOf("{% else %}\n    <div")
+    );
+  }
+
+  hasFooterStyles() {
+    return (
+      /\.ins-footer\s*\{[^}]+\}/.test(this.stylesheet) &&
+      /\.ins-footer__qr\s*\{[^}]+\}/.test(this.stylesheet)
+    );
+  }
+
+  hasFooterInMarkup(markup) {
+    return markup.includes("ins-footer");
+  }
+
   hasTextOnlyWordmark() {
     return (
       this.markup.includes('<span class="ins-brand__name">In Season</span>') &&
@@ -630,6 +661,34 @@ describe("Liquid layout contract", () => {
     expect(fullScreen.hasSourceQrCode()).toBe(false);
     expect(fullScreen.hasSectionCounts()).toBe(false);
     expect(fullScreen.hasLegacyHeaderCopy()).toBe(false);
+  });
+
+  test("full-screen footer carries an inline QArt sources QR in data states only", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+
+    expect(fullScreen.hasSourcesFooter()).toBe(true);
+    expect(fullScreen.hasFooterOnlyInDataStates()).toBe(true);
+    expect(fullScreen.hasFooterStyles()).toBe(true);
+    expect(fullScreen.hasSourceQrCode()).toBe(false);
+  });
+
+  test.each(["half_horizontal", "half_vertical", "quadrant"])(
+    "%s stays QR-free without a sources footer",
+    (layout) => {
+      const markup = template(layout);
+
+      expect(markup).not.toContain("ins-footer");
+      expect(markup.match(/data:image\/png;base64,/g) ?? []).toHaveLength(0);
+    }
+  );
+
+  test("shared stylesheet inlines botanical art only, never the sources QR", () => {
+    const fullScreen = new FullScreenLayoutDriver();
+    const shared = template("shared");
+
+    expect(shared.match(/data:image\/png;base64,/g) ?? []).toHaveLength(2);
+    expect(shared).not.toContain('class="ins-footer__qr"');
+    expect(fullScreen.markup.match(/data:image\/png;base64,/g) ?? []).toHaveLength(1);
   });
 
   test("full-screen header gives the month explicit bold emphasis", () => {

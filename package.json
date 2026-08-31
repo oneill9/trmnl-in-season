@@ -4,12 +4,14 @@
   "description": "TRMNL plugin showing locally harvested fruit and vegetables by country",
   "scripts": {
     "test": "jest --verbose --runInBand",
-    "previews": "node scripts/generate-previews.js"
+    "previews": "node scripts/generate-previews.js",
+    "qr": "node scripts/generate-qr.js"
   },
   "keywords": ["trmnl", "seasonal", "fruit", "vegetables", "produce"],
   "license": "MIT",
   "devDependencies": {
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0"
   }
 }
-
