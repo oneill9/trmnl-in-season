@@ -4,21 +4,22 @@ const { spawnSync } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { generate: generateQrCandidates } = require("../scripts/generate-qr");
 
 class DevicePreviewDriver {
   constructor() {
     this.repositoryRoot = path.join(__dirname, "..");
     this.outDir = fs.mkdtempSync(path.join(os.tmpdir(), "in-season-previews-"));
-    this.candidatePath = path.join(
-      this.repositoryRoot,
-      "_build",
-      "qr",
-      "qr-v5l-rotation-0.png"
-    );
+    this.qrDir = path.join(this.outDir, "qr");
+    this.candidatePath = path.join(this.qrDir, "qr-v5l-rotation-0.png");
   }
 
   cleanup() {
     fs.rmSync(this.outDir, { recursive: true, force: true });
+  }
+
+  generateCandidate() {
+    generateQrCandidates({ outDir: this.qrDir });
   }
 
   generateWithCandidate() {
@@ -57,6 +58,7 @@ describe("device preview generator", () => {
     const sourceBefore = previews.sourceTemplate();
 
     try {
+      previews.generateCandidate();
       const result = previews.generateWithCandidate();
 
       expect(result.error).toBeUndefined();
