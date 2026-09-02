@@ -570,6 +570,15 @@ describe("Liquid layout contract", () => {
     expect(markup).not.toMatch(/National harvest guide|guide_label/);
   });
 
+  test.each(["full", "half_vertical"])(
+    "%s centers the setup question mark inside its circle",
+    (layout) => {
+      expect(template(layout)).toContain(
+        'class="ins-empty__mark rounded--full flex flex--center-x flex--center-y"'
+      );
+    }
+  );
+
   test("full layout renders complete produce grouped into categories", () => {
     const fullScreen = new FullScreenLayoutDriver();
 
