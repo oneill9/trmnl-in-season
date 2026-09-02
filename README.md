@@ -6,7 +6,9 @@
   <img src="src/assets/in-season-icon.png" alt="In Season aubergine icon" width="128">
 </p>
 
-A [TRMNL](https://usetrmnl.com/) plugin that lists fruit and vegetables harvested in the user's country during the current month. It ships with its seasonality data and asks only for the country.
+An [In Season recipe for TRMNL](https://trmnl.com/recipes/407471) that lists fruit and vegetables harvested in the user's country during the current month. It ships with its seasonality data and asks only for the country.
+
+[Install In Season on TRMNL](https://trmnl.com/recipes/407471)
 
 ## Features
 
@@ -32,7 +34,7 @@ The result is a national guide, not a local crop forecast. Weather, latitude, al
 
 ## Deploy to TRMNL
 
-This repository deploys the existing In Season plugin with ID `407471`. Maintainers use the official [`trmnlp`](https://github.com/usetrmnl/trmnlp) tool:
+This repository deploys the published [In Season recipe](https://trmnl.com/recipes/407471), with ID `407471`. Maintainers use the official [`trmnlp`](https://github.com/usetrmnl/trmnlp) tool:
 
 ```sh
 git clone https://github.com/oneill9/trmnl-in-season.git
@@ -52,7 +54,7 @@ The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static so
 
 [Dependabot](.github/dependabot.yml) checks GitHub Actions, Bundler, and npm dependencies every Monday. It groups minor and patch releases by ecosystem and opens separate pull requests for major upgrades.
 
-Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update this private plugin instead of creating another one.
+Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update the published recipe instead of creating another one.
 
 ## Develop
 
