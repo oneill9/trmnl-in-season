@@ -20,6 +20,14 @@ class SourcesPageDriver {
     return fs.readFileSync(this.pagePath, "utf8");
   }
 
+  canonicalUrls() {
+    return [...this.page().matchAll(/<link rel="canonical" href="([^"]+)"/g)].map((match) => match[1]);
+  }
+
+  sitemap() {
+    return fs.readFileSync(path.join(__dirname, "..", "docs", "sitemap.xml"), "utf8");
+  }
+
   workflow() {
     return fs.readFileSync(this.workflowPath, "utf8");
   }
@@ -68,6 +76,15 @@ class SourcesPageDriver {
 }
 
 describe("public source guide", () => {
+  test("provides a sitemap containing the canonical source guide URL", () => {
+    const page = new SourcesPageDriver();
+    const canonicalUrl = "https://oneill9.github.io/trmnl-in-season/";
+
+    expect(page.canonicalUrls()).toEqual([canonicalUrl]);
+    expect(page.sitemap()).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    expect([...page.sitemap().matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])).toEqual([canonicalUrl]);
+  });
+
   test("immediately initializes its own analytics stream with isolated project cookies", () => {
     const page = new SourcesPageDriver();
     const loaders = page.analyticsLoaders();
