@@ -54,6 +54,15 @@ class SourcesPageDriver {
     return fs.existsSync(path.join(__dirname, "..", "docs", name));
   }
 
+  reference(name) {
+    return fs.readFileSync(path.join(__dirname, "..", "docs", name), "utf8");
+  }
+
+  referenceLinks() {
+    return [...this.page().matchAll(/<link rel="describedby" href="([^"]+)" type="([^"]+)"/g)]
+      .map((match) => ({ url: match[1], type: match[2] }));
+  }
+
   linksToPublishedRecipe() {
     return this.page().includes(
       'href="https://trmnl.com/recipes/407471"'
@@ -76,6 +85,28 @@ class SourcesPageDriver {
 }
 
 describe("public source guide", () => {
+  test("lets agents discover both raw references and the seasonal evidence guide", () => {
+    const page = new SourcesPageDriver();
+    const baseUrl = "https://oneill9.github.io/trmnl-in-season/";
+
+    expect(page.referenceLinks()).toEqual([
+      { url: `${baseUrl}llms.txt`, type: "text/plain" },
+      { url: `${baseUrl}llms.md`, type: "text/markdown" },
+    ]);
+    for (const name of ["llms.txt", "llms.md"]) {
+      const reference = page.reference(name);
+      expect(reference).toMatch(/^# In Season\n\n> /);
+      expect(reference).not.toMatch(/<!doctype|<html/i);
+      expect(reference).toContain(`](${baseUrl}DATA_SOURCES.md)`);
+    }
+    expect(page.reference("llms.txt")).toContain(`](${baseUrl}llms.md)`);
+    for (const country of ["United Kingdom", "Ireland", "United States", "Canada", "Australia", "New Zealand"]) {
+      expect(page.reference("llms.md")).toContain(country);
+    }
+    expect(page.reference("llms.md")).toContain("https://trmnl.com/recipes/407471");
+    expect(page.reference("llms.md")).toContain("domestic fresh harvest");
+  });
+
   test("provides a sitemap containing the canonical source guide URL", () => {
     const page = new SourcesPageDriver();
     const canonicalUrl = "https://oneill9.github.io/trmnl-in-season/";

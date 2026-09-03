@@ -1,0 +1,18 @@
+# In Season
+
+> A TRMNL recipe that displays seasonal fruit and vegetables for the current month in the United Kingdom, Ireland, United States, Canada, Australia or New Zealand.
+
+"In season" means domestic fresh harvest, not supermarket availability. The recipe uses a bundled country-and-month catalogue, not live crop or weather data.
+
+## Project reference
+
+- [In Season reference](https://oneill9.github.io/trmnl-in-season/llms.md): Setup, supported countries, harvest rules and limitations in Markdown.
+- [Sources and methodology](https://oneill9.github.io/trmnl-in-season/): Public guide to the evidence for each country.
+- [Data sources](https://oneill9.github.io/trmnl-in-season/DATA_SOURCES.md): Evidence links and catalogue inclusion rules in Markdown.
+- [Install the TRMNL recipe](https://trmnl.com/recipes/407471): Published recipe for a TRMNL device.
+
+## Optional
+
+- [README](https://raw.githubusercontent.com/oneill9/trmnl-in-season/main/README.md): Project setup and development notes.
+- [Catalogue and transform](https://github.com/oneill9/trmnl-in-season/blob/main/src/transform.js): Country-specific produce, harvest months and selection logic.
+- [Source repository](https://github.com/oneill9/trmnl-in-season): Templates, tests and issue tracker.
