@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 
 class SourcesPageDriver {
   constructor() {
@@ -50,9 +51,37 @@ class SourcesPageDriver {
       'href="https://trmnl.com/recipes/407471"'
     );
   }
+
+  analyticsLoaders() {
+    return [...this.page().matchAll(/<script\b[^>]*src="(https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=[^"]+)"[^>]*>/g)];
+  }
+
+  analyticsCommands() {
+    const scripts = [...this.page().matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    const analytics = scripts.find((script) => script[1].includes("gtag('config'"));
+    if (!analytics) return [];
+    const context = vm.createContext({});
+    context.window = context;
+    vm.runInContext(analytics[1], context);
+    return JSON.parse(JSON.stringify(context.dataLayer.map((command) => [...command])));
+  }
 }
 
 describe("public source guide", () => {
+  test("immediately initializes its own analytics stream with isolated project cookies", () => {
+    const page = new SourcesPageDriver();
+    const loaders = page.analyticsLoaders();
+
+    expect(loaders).toHaveLength(1);
+    expect(loaders[0][1]).toBe("https://www.googletagmanager.com/gtag/js?id=G-MN20E35ELS");
+    expect(loaders[0][0]).toMatch(/\basync\b/);
+    const configurations = page.analyticsCommands().filter((command) => command[0] === "config");
+    expect(configurations).toEqual([["config", "G-MN20E35ELS", {
+      cookie_path: "/trmnl-in-season/",
+      cookie_prefix: "trmnl_in_season"
+    }]]);
+  });
+
   test("provides a directly linkable section for every supported country", () => {
     const page = new SourcesPageDriver().page();
     const countrySections = [
