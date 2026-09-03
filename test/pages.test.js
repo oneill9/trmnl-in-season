@@ -44,6 +44,12 @@ class SourcesPageDriver {
   docsFileExists(name) {
     return fs.existsSync(path.join(__dirname, "..", "docs", name));
   }
+
+  linksToPublishedRecipe() {
+    return this.page().includes(
+      'href="https://trmnl.com/recipes/407471"'
+    );
+  }
 }
 
 describe("public source guide", () => {
@@ -82,6 +88,12 @@ describe("public source guide", () => {
     expectedSourceHosts.forEach((sourceHost) => {
       expect(page).toContain(sourceHost);
     });
+  });
+
+  test("links to the published In Season recipe", () => {
+    const page = new SourcesPageDriver();
+
+    expect(page.linksToPublishedRecipe()).toBe(true);
   });
 
   test("references page assets that ship inside docs/", () => {
