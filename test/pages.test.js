@@ -28,8 +28,28 @@ class SourcesPageDriver {
     return fs.readFileSync(path.join(__dirname, "..", "docs", "sitemap.xml"), "utf8");
   }
 
+  sitemapUrls() {
+    return [...this.sitemap().matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+      (match) => match[1]
+    );
+  }
+
   workflow() {
     return fs.readFileSync(this.workflowPath, "utf8");
+  }
+
+  indexNowKeyFiles() {
+    return fs
+      .readdirSync(path.join(__dirname, "..", "docs"))
+      .filter((name) => /^[0-9a-f]{32}\.txt$/.test(name));
+  }
+
+  indexNowPayload() {
+    const match = this.workflow().match(
+      /--data-binary\s+'(\{[\s\S]*?\})'/
+    );
+
+    return match ? JSON.parse(match[1]) : null;
   }
 
   actionReferences() {
@@ -113,7 +133,25 @@ describe("public source guide", () => {
 
     expect(page.canonicalUrls()).toEqual([canonicalUrl]);
     expect(page.sitemap()).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect([...page.sitemap().matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])).toEqual([canonicalUrl]);
+    expect(page.sitemapUrls()).toEqual([canonicalUrl]);
+  });
+
+  test("notifies IndexNow after deployment for every sitemap URL", () => {
+    const page = new SourcesPageDriver();
+    const keyFiles = page.indexNowKeyFiles();
+
+    expect(keyFiles).toHaveLength(1);
+    const key = path.basename(keyFiles[0], ".txt");
+    expect(page.reference(keyFiles[0]).trim()).toBe(key);
+    expect(page.workflow()).toContain("indexnow:");
+    expect(page.workflow()).toContain("needs: deploy");
+    expect(page.workflow()).toContain("--fail-with-body");
+    expect(page.indexNowPayload()).toEqual({
+      host: "oneill9.github.io",
+      key,
+      keyLocation: `https://oneill9.github.io/trmnl-in-season/${key}.txt`,
+      urlList: page.sitemapUrls(),
+    });
   });
 
   test("immediately initializes its own analytics stream with isolated project cookies", () => {

@@ -32,3 +32,30 @@ jobs:
           path: docs
       - id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  indexnow:
+    name: Notify IndexNow
+    needs: deploy
+    permissions: {}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Notify IndexNow
+        run: |
+          test "$(curl --silent --show-error --fail \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "https://oneill9.github.io/trmnl-in-season/f241b0cdcdb90be5669cfa677b1572ed.txt")" \
+            = "f241b0cdcdb90be5669cfa677b1572ed"
+          curl --silent --show-error --fail-with-body \
+            --request POST "https://api.indexnow.org/indexnow" \
+            --header "Content-Type: application/json; charset=utf-8" \
+            --data-binary '{
+              "host": "oneill9.github.io",
+              "key": "f241b0cdcdb90be5669cfa677b1572ed",
+              "keyLocation": "https://oneill9.github.io/trmnl-in-season/f241b0cdcdb90be5669cfa677b1572ed.txt",
+              "urlList": [
+                "https://oneill9.github.io/trmnl-in-season/"
+              ]
+            }'
+          echo "### IndexNow" >> "$GITHUB_STEP_SUMMARY"
+          echo "Notified search engines of updated pages" >> "$GITHUB_STEP_SUMMARY"
