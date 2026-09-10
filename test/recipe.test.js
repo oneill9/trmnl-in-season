@@ -22,7 +22,7 @@ class RecipeSettingsDriver {
 }
 
 describe("public TRMNL recipe settings", () => {
-  test("provides public discovery and support details without exposing email", () => {
+  test("provides public discovery links and a contact email address", () => {
     const settings = new RecipeSettingsDriver();
     const authorBio = settings.authorBio();
 
@@ -35,7 +35,7 @@ describe("public TRMNL recipe settings", () => {
     expect(authorBio).toContain(
       "learn_more_url: https://oneill9.github.io/trmnl-in-season/"
     );
-    expect(authorBio).not.toContain("email_address:");
+    expect(authorBio).toContain("email_address: lulls_parcel.0e@icloud.com");
   });
 
   test("pins the TRMNL Framework used by published installations", () => {

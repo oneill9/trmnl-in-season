@@ -38,6 +38,7 @@ custom_fields:
   category: nature,life
   github_url: https://github.com/oneill9/trmnl-in-season
   learn_more_url: https://oneill9.github.io/trmnl-in-season/
+  email_address: lulls_parcel.0e@icloud.com
 - keyname: country
   name: Country
   field_type: select
