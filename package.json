@@ -17,7 +17,7 @@
   "license": "MIT",
   "devDependencies": {
     "@zxing/library": "^0.23.0",
-    "jest": "^30.4.2",
+    "jest": "^30.5.1",
     "jsqr": "^1.4.0",
     "pngjs": "^7.0.0"
   }
