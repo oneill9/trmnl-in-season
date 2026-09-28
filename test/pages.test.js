@@ -120,7 +120,7 @@ describe("public source guide", () => {
       expect(reference).toContain(`](${baseUrl}DATA_SOURCES.md)`);
     }
     expect(page.reference("llms.txt")).toContain(`](${baseUrl}llms.md)`);
-    for (const country of ["United Kingdom", "Ireland", "United States", "Canada", "Australia", "New Zealand"]) {
+    for (const country of ["United Kingdom", "Ireland", "Netherlands", "United States", "Canada", "Australia", "New Zealand"]) {
       expect(page.reference("llms.md")).toContain(country);
     }
     expect(page.reference("llms.md")).toContain("https://trmnl.com/recipes/407471");
@@ -173,6 +173,7 @@ describe("public source guide", () => {
     const countrySections = [
       "united-kingdom",
       "ireland",
+      "netherlands",
       "united-states",
       "canada",
       "australia",
@@ -190,6 +191,7 @@ describe("public source guide", () => {
       "rhs.org.uk",
       "worcestershire.gov.uk",
       "bordbia.ie",
+      "voedingscentrum.nl",
       "snaped.fns.usda.gov",
       "ontario.ca",
       "buybc.gov.bc.ca",

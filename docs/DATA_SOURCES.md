@@ -29,7 +29,7 @@ Every country entry in `src/transform.js` lists the sources used to compile it. 
 
 ## Sources
 
-Maintainers reviewed all sources on 5 August 2026.
+Maintainers reviewed the sources on 5 August 2026 unless a country section gives another date.
 
 ### United Kingdom
 
@@ -39,6 +39,12 @@ Maintainers reviewed all sources on 5 August 2026.
 ### Ireland
 
 - [Bord Bia, Best in Season calendar](https://www.bordbia.ie/whats-in-season/)
+
+### Netherlands
+
+- [Voedingscentrum, Wat zijn seizoensgroenten en seizoensfruit?](https://www.voedingscentrum.nl/nl/service/vraag-en-antwoord/gezonde-voeding-en-voedingsstoffen/wat-zijn-seizoensgroenten-en-seizoensfruit.aspx), including its [seasonal vegetable and fruit calendar](https://www.voedingscentrum.nl/Assets/Uploads/voedingscentrum/Documents/Consumenten/Veelgestelde%20vragen/Voedingscentrum%20seizoengroente-%20en%20fruitkalender.pdf)
+
+Maintainers reviewed this source on 28 September 2026. The calendar covers produce from open fields, plastic tunnels and unheated greenhouses, and it does not mark stored produce. Apples, pears, onions, pumpkins, carrots, beetroot, celeriac and cabbage appear in months that only storage can supply. For those crops, the catalogue keeps the months that also fall within the United Kingdom and Ireland fresh-harvest windows. It omits forced chicory.
 
 ### United States
 

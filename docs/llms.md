@@ -8,7 +8,7 @@ The [project website](https://oneill9.github.io/trmnl-in-season/) is a source an
 
 Install [In Season from the TRMNL recipe page](https://trmnl.com/recipes/407471), select a country and add the recipe instance to your device's playlist.
 
-The supported countries are United Kingdom, Ireland, United States, Canada, Australia and New Zealand. Produce names follow local usage, such as aubergine or eggplant, courgette or zucchini, and kūmara.
+The supported countries are United Kingdom, Ireland, Netherlands, United States, Canada, Australia and New Zealand. Produce names follow local usage, such as aubergine or eggplant, courgette or zucchini, and kūmara.
 
 The daily transform selects the calendar month using the user's TRMNL timezone. It reads a bundled catalogue, with no runtime API requests. The recipe supports full, half-horizontal, half-vertical and quadrant layouts. The full layout shows all matching produce; smaller layouts prioritise familiar examples from the most abundant categories.
 
@@ -30,6 +30,7 @@ Country evidence is linked from the public guide:
 
 - [United Kingdom](https://oneill9.github.io/trmnl-in-season/#united-kingdom), including RHS and Worcestershire County Council.
 - [Ireland](https://oneill9.github.io/trmnl-in-season/#ireland), including Bord Bia.
+- [Netherlands](https://oneill9.github.io/trmnl-in-season/#netherlands), including Voedingscentrum.
 - [United States](https://oneill9.github.io/trmnl-in-season/#united-states), including the USDA seasonal produce guide.
 - [Canada](https://oneill9.github.io/trmnl-in-season/#canada), including Foodland Ontario and Buy BC.
 - [Australia](https://oneill9.github.io/trmnl-in-season/#australia), including NSW Health and Brisbane City Council.
