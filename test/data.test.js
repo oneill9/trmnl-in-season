@@ -12,6 +12,7 @@ describe("seasonal data contract", () => {
     expect(Object.keys(COUNTRIES)).toEqual([
       "united_kingdom",
       "ireland",
+      "netherlands",
       "united_states",
       "canada",
       "australia",

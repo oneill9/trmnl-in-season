@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { COUNTRIES } = require("../src/transform");
 
 // Driver layer
 
@@ -18,6 +19,16 @@ class RecipeSettingsDriver {
     return this.contents().match(
       /- keyname: about_in_season[\s\S]*?(?=\n- keyname:|$)/
     )?.[0];
+  }
+
+  countryOptions() {
+    const countryField = this.contents().match(
+      /- keyname: country\n[\s\S]*?options:\n((?: {2}- .+\n)+)/
+    );
+    return countryField[1]
+      .trim()
+      .split("\n")
+      .map((option) => option.replace(/^\s*- /, ""));
   }
 }
 
@@ -36,6 +47,14 @@ describe("public TRMNL recipe settings", () => {
       "learn_more_url: https://oneill9.github.io/trmnl-in-season/"
     );
     expect(authorBio).toContain("email_address: lulls_parcel.0e@icloud.com");
+  });
+
+  test("offers every supported country in the Country dropdown", () => {
+    const settings = new RecipeSettingsDriver();
+
+    expect(settings.countryOptions()).toEqual(
+      Object.values(COUNTRIES).map((country) => country.name)
+    );
   });
 
   test("pins the TRMNL Framework used by published installations", () => {

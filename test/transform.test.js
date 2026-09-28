@@ -147,6 +147,58 @@ describe("TRMNL seasonality transform", () => {
     expect(aliasResult.country_code).toBe("united_kingdom");
   });
 
+  test.each(["Netherlands", "The Netherlands", "Holland", "NL"])(
+    "resolves %s to the Netherlands",
+    (label) => {
+      const result = new SeasonalityDriver().forCountry(label).execute();
+
+      expect(result.country_code).toBe("netherlands");
+      expect(result.country_name).toBe("Netherlands");
+    }
+  );
+
+  test("keeps Dutch winter field crops but omits storage-only produce", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("netherlands")
+      .inTimeZone("Europe/Amsterdam")
+      .at("2026-03-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining([
+        "Kale",
+        "Leeks",
+        "Parsnips",
+        "Lamb's lettuce",
+        "Salsify",
+      ])
+    );
+    ["Carrots", "Onions", "Pumpkins", "Beetroot"].forEach((name) => {
+      expect(names(result.vegetables)).not.toContain(name);
+    });
+    expect(result.fruits).toEqual([]);
+  });
+
+  test("lists the Dutch autumn harvest including Dutch staples", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("netherlands")
+      .inTimeZone("Europe/Amsterdam")
+      .at("2026-10-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.fruits)).toEqual(
+      expect.arrayContaining(["Apples", "Pears", "Quinces", "Kiwiberries"])
+    );
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining([
+        "Endive",
+        "Kohlrabi",
+        "Chinese cabbage",
+        "Brussels sprouts",
+      ])
+    );
+  });
+
   test("builds complete abundance-ranked full-screen categories", () => {
     const result = new SeasonalityDriver().execute();
 
@@ -210,6 +262,7 @@ describe("TRMNL seasonality transform", () => {
   test.each([
     "united_kingdom",
     "ireland",
+    "netherlands",
     "united_states",
     "canada",
     "australia",
@@ -242,6 +295,7 @@ describe("TRMNL seasonality transform", () => {
   test.each([
     ["united_kingdom", "united-kingdom"],
     ["ireland", "ireland"],
+    ["netherlands", "netherlands"],
     ["united_states", "united-states"],
     ["canada", "canada"],
     ["australia", "australia"],
@@ -406,6 +460,7 @@ describe("TRMNL seasonality transform", () => {
     const countryCodes = [
       "united_kingdom",
       "ireland",
+      "netherlands",
       "united_states",
       "canada",
       "australia",
