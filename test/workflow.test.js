@@ -52,6 +52,18 @@ class RubyDependenciesDriver {
   lockfile() {
     return fs.readFileSync(this.lockfilePath, "utf8");
   }
+
+  pinnedPreviewVersion() {
+    return this.gemfile().match(
+      /^gem "trmnl_preview", "(\d+\.\d+\.\d+)"$/m
+    )?.[1];
+  }
+
+  lockedPreviewVersion() {
+    return this.lockfile().match(
+      /^    trmnl_preview \((\d+\.\d+\.\d+)\)$/m
+    )?.[1];
+  }
 }
 
 class ServerLauncherDriver {
@@ -161,10 +173,10 @@ describe("TRMNL delivery workflow", () => {
     const workflow = new TrmnlWorkflowDriver().contents();
     const dependencies = new RubyDependenciesDriver();
 
-    expect(dependencies.gemfile()).toContain(
-      'gem "trmnl_preview", "0.11.0"'
+    expect(dependencies.pinnedPreviewVersion()).toBeDefined();
+    expect(dependencies.lockedPreviewVersion()).toBe(
+      dependencies.pinnedPreviewVersion()
     );
-    expect(dependencies.lockfile()).toMatch(/trmnl_preview \(0\.11\.0\)/);
     expect(workflow).toContain("bundle exec trmnlp lint");
     expect(workflow).toContain("bundle exec trmnlp push --force");
     expect(workflow).not.toContain("gem install trmnl_preview");
