@@ -199,6 +199,111 @@ describe("TRMNL seasonality transform", () => {
     );
   });
 
+  test.each([
+    ["Belgium", "belgium", "Belgium"],
+    ["BE", "belgium", "Belgium"],
+    ["France", "france", "France"],
+    ["FR", "france", "France"],
+    ["Germany", "germany", "Germany"],
+    ["Deutschland", "germany", "Germany"],
+    ["DE", "germany", "Germany"],
+  ])("resolves %s to %s", (label, countryCode, countryName) => {
+    const result = new SeasonalityDriver().forCountry(label).execute();
+
+    expect(result.country_code).toBe(countryCode);
+    expect(result.country_name).toBe(countryName);
+  });
+
+  test("keeps Belgian winter field crops but omits stored produce", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("belgium")
+      .inTimeZone("Europe/Brussels")
+      .at("2026-01-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining([
+        "Brussels sprouts",
+        "Kale",
+        "Leeks",
+        "Parsnips",
+        "Lamb's lettuce",
+      ])
+    );
+    ["Carrots", "Onions", "Potatoes", "Beetroot"].forEach((name) => {
+      expect(names(result.vegetables)).not.toContain(name);
+    });
+    expect(result.fruits).toEqual([]);
+  });
+
+  test("lists the French summer harvest without imported fruit", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("france")
+      .inTimeZone("Europe/Paris")
+      .at("2026-07-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.fruits)).toEqual(
+      expect.arrayContaining(["Apricots", "Peaches", "Melons", "Watermelons"])
+    );
+    ["Bananas", "Mangoes", "Oranges"].forEach((name) => {
+      expect(names(result.fruits)).not.toContain(name);
+    });
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining(["Tomatoes", "Aubergines", "Courgettes"])
+    );
+  });
+
+  test("omits French stored apples and carrots in spring", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("france")
+      .inTimeZone("Europe/Paris")
+      .at("2026-03-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.fruits)).not.toContain("Apples");
+    expect(names(result.vegetables)).not.toContain("Carrots");
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining(["Leeks", "Cauliflower", "Radishes"])
+    );
+  });
+
+  test("starts the German asparagus season before covered crops reach the field", () => {
+    const result = new SeasonalityDriver()
+      .forCountry("germany")
+      .inTimeZone("Europe/Berlin")
+      .at("2026-04-15T12:00:00.000Z")
+      .execute();
+
+    expect(names(result.vegetables)).toEqual(
+      expect.arrayContaining(["Asparagus", "Spinach", "Leeks"])
+    );
+    ["Kohlrabi", "Lettuce", "Carrots"].forEach((name) => {
+      expect(names(result.vegetables)).not.toContain(name);
+    });
+    expect(result.fruits).toEqual([]);
+  });
+
+  test("never lists German tomatoes, peppers or aubergines, which grow only under cover", () => {
+    const monthsWithCoveredCrops = [];
+
+    for (let month = 0; month < 12; month += 1) {
+      const result = new SeasonalityDriver()
+        .forCountry("germany")
+        .at(new Date(Date.UTC(2026, month, 15, 12)).toISOString())
+        .execute();
+      if (
+        names(result.vegetables).some((name) =>
+          ["Tomatoes", "Peppers", "Aubergines"].includes(name)
+        )
+      ) {
+        monthsWithCoveredCrops.push(month + 1);
+      }
+    }
+
+    expect(monthsWithCoveredCrops).toEqual([]);
+  });
+
   test("builds complete abundance-ranked full-screen categories", () => {
     const result = new SeasonalityDriver().execute();
 
@@ -263,6 +368,9 @@ describe("TRMNL seasonality transform", () => {
     "united_kingdom",
     "ireland",
     "netherlands",
+    "belgium",
+    "france",
+    "germany",
     "united_states",
     "canada",
     "australia",
@@ -296,6 +404,9 @@ describe("TRMNL seasonality transform", () => {
     ["united_kingdom", "united-kingdom"],
     ["ireland", "ireland"],
     ["netherlands", "netherlands"],
+    ["belgium", "belgium"],
+    ["france", "france"],
+    ["germany", "germany"],
     ["united_states", "united-states"],
     ["canada", "canada"],
     ["australia", "australia"],
@@ -435,10 +546,10 @@ describe("TRMNL seasonality transform", () => {
   });
 
   test("returns an explicit state for an unsupported country", () => {
-    const result = new SeasonalityDriver().forCountry("France").execute();
+    const result = new SeasonalityDriver().forCountry("Spain").execute();
 
     expect(result.has_data).toBe(false);
-    expect(result.country_code).toBe("france");
+    expect(result.country_code).toBe("spain");
     expect(result.error_message).toBe("That country is not supported.");
   });
 
@@ -461,6 +572,9 @@ describe("TRMNL seasonality transform", () => {
       "united_kingdom",
       "ireland",
       "netherlands",
+      "belgium",
+      "france",
+      "germany",
       "united_states",
       "canada",
       "australia",
