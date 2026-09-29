@@ -120,7 +120,7 @@ describe("public source guide", () => {
       expect(reference).toContain(`](${baseUrl}DATA_SOURCES.md)`);
     }
     expect(page.reference("llms.txt")).toContain(`](${baseUrl}llms.md)`);
-    for (const country of ["United Kingdom", "Ireland", "Netherlands", "United States", "Canada", "Australia", "New Zealand"]) {
+    for (const country of ["United Kingdom", "Ireland", "Netherlands", "Belgium", "France", "Germany", "United States", "Canada", "Australia", "New Zealand"]) {
       expect(page.reference("llms.md")).toContain(country);
     }
     expect(page.reference("llms.md")).toContain("https://trmnl.com/recipes/407471");
@@ -174,6 +174,9 @@ describe("public source guide", () => {
       "united-kingdom",
       "ireland",
       "netherlands",
+      "belgium",
+      "france",
+      "germany",
       "united-states",
       "canada",
       "australia",
@@ -192,6 +195,9 @@ describe("public source guide", () => {
       "worcestershire.gov.uk",
       "bordbia.ie",
       "voedingscentrum.nl",
+      "environnement.brussels",
+      "impactco2.fr",
+      "verbraucherzentrale.de",
       "snaped.fns.usda.gov",
       "ontario.ca",
       "buybc.gov.bc.ca",

@@ -1,6 +1,6 @@
 # In Season
 
-> A TRMNL recipe that displays seasonal fruit and vegetables for the current month in the United Kingdom, Ireland, Netherlands, United States, Canada, Australia or New Zealand.
+> A TRMNL recipe that displays seasonal fruit and vegetables for the current month in the United Kingdom, Ireland, Netherlands, Belgium, France, Germany, United States, Canada, Australia or New Zealand.
 
 "In season" means domestic fresh harvest, not supermarket availability. The recipe uses a bundled country-and-month catalogue, not live crop or weather data.
 

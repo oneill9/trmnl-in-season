@@ -46,6 +46,24 @@ Maintainers reviewed the sources on 5 August 2026 unless a country section gives
 
 Maintainers reviewed this source on 28 September 2026. The calendar covers produce from open fields, plastic tunnels and unheated greenhouses, and it does not mark stored produce. Apples, pears, onions, pumpkins, carrots, beetroot, celeriac and cabbage appear in months that only storage can supply. For those crops, the catalogue keeps the months that also fall within the United Kingdom and Ireland fresh-harvest windows. It omits forced chicory.
 
+### Belgium
+
+- [Brussels Environment, Calendrier des fruits & légumes locaux, de saison, et hors serre](https://document.environnement.brussels/opac_css/elecfile/Calendrier_FR_def_Part_FR.PDF)
+
+Maintainers reviewed this source on 29 September 2026. The calendar covers produce from Belgium and neighbouring northern France. It excludes heated greenhouses and marks stored produce separately, so the catalogue keeps only its fresh months. It omits forced chicory.
+
+### France
+
+- [ADEME Impact CO2, Fruits et légumes de saison](https://impactco2.fr/outils/fruitsetlegumes)
+
+Maintainers reviewed this source on 29 September 2026. The calendar does not mark stored produce. Apples, pears, carrots, beetroot, celeriac, turnips, pumpkins and squash appear in months that only storage can supply. For those crops, the catalogue keeps the months that also fall within the Brussels Environment fresh-harvest windows for Belgium and northern France. Onions fall outside those windows and are omitted. The catalogue also omits citrus, tropical fruit and forced chicory, which the calendar lists from imports or forcing rooms.
+
+### Germany
+
+- [Verbraucherzentrale, Saisonkalender: Obst und Gemüse frisch und regional einkaufen](https://www.verbraucherzentrale.de/wissen/lebensmittel/gesund-ernaehren/saisonkalender-obst-und-gemuese-frisch-und-saisonal-einkaufen-17229), including its [seasonal calendar](https://www.verbraucherzentrale.de/sites/default/files/2023-01/vz-saisonkalender.pdf)
+
+Maintainers reviewed this source on 29 September 2026. The Leibniz Institute of Vegetable and Ornamental Crops and the University of Bonn advised on the calendar, and the Federal Ministry of Food and Agriculture funds it. It separates open-field, foil-or-fleece, greenhouse and stored produce. The catalogue keeps only open-field months, so it omits tomatoes, peppers, aubergines and salad cucumbers.
+
 ### United States
 
 - [USDA SNAP-Ed, Seasonal Produce Guide](https://snaped.fns.usda.gov/resources/nutrition-education-materials/seasonal-produce-guide)
