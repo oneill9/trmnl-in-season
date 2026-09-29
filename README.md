@@ -12,7 +12,7 @@ An [In Season recipe for TRMNL](https://trmnl.com/recipes/407471) that lists fru
 
 ## Features
 
-- Covers the United Kingdom, Ireland, United States, Canada, Australia, and New Zealand
+- Covers the United Kingdom, Ireland, the Netherlands, Belgium, France, Germany, United States, Canada, Australia, and New Zealand
 - Uses local names such as "aubergine," "eggplant," "courgette," "zucchini," "capsicum," and "kūmara"
 - Omits imported produce and items available only from storage or heated greenhouses
 - Supports full, half-horizontal, half-vertical, and quadrant layouts
