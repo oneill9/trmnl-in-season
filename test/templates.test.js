@@ -489,7 +489,7 @@ class CompactLayoutDriver {
   }
 
   hasLeftAlignedCategoryRows() {
-    return /text-align:\s*left/.test(this.categoryRule() ?? "");
+    return this.markup.includes('class="ins-category text--left"');
   }
 
   hasFlowingCategoryText() {
@@ -559,6 +559,27 @@ class CompactLayoutDriver {
 }
 
 describe("Liquid layout contract", () => {
+  test("stays within the pinned TRMNL lint style-property budget", () => {
+    // trmnl_preview counts these properties in shared CSS as well as inline styles.
+    const markup = [...LAYOUTS, "shared"].map(template).join("");
+    const properties = [
+      "justify-content",
+      "padding",
+      "margin",
+      "background-color",
+      "border-radius",
+      "text-align",
+      "object-fit",
+      "font-size",
+    ];
+    const propertyCount = properties.reduce(
+      (count, property) => count + markup.split(property).length - 1,
+      0
+    );
+
+    expect(propertyCount).toBeLessThanOrEqual(6);
+  });
+
   test.each(LAYOUTS)("%s renders data and setup states", (layout) => {
     const markup = template(layout);
 
