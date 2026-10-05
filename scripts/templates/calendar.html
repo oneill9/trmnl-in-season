@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="{{LANG}}">
   <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MN20E35ELS"></script>
     <script>
@@ -13,9 +13,9 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Find UK seasonal fruit and vegetables for every month, from winter roots to summer berries. A fresh-harvest calendar with sources and regional guidance.">
-    <title>UK Seasonal Fruit &amp; Vegetable Calendar | In Season</title>
-    <link rel="canonical" href="https://oneill9.github.io/trmnl-in-season/united-kingdom/">
+    <meta name="description" content="{{DESCRIPTION}}">
+    <title>{{TITLE_COUNTRY}} Seasonal Fruit &amp; Vegetable Calendar | In Season</title>
+    <link rel="canonical" href="https://oneill9.github.io/trmnl-in-season/{{SLUG}}/">
     <link rel="icon" type="image/png" href="../in-season-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,9 +81,9 @@
           <img src="../in-season-icon.png" alt="In Season aubergine icon" width="64" height="64">
         </div>
         <div>
-          <p class="ins-eyebrow">United Kingdom harvest guide</p>
-          <h1 class="ins-hero">UK seasonal fruit and vegetable calendar</h1>
-          <p class="intro">See which fruit and vegetables are normally harvested in the UK each month. This is the same fresh-harvest catalogue used by In Season on TRMNL.</p>
+          <p class="ins-eyebrow">{{COUNTRY_NAME}} harvest guide</p>
+          <h1 class="ins-hero">{{TITLE_COUNTRY}} seasonal fruit and vegetable calendar</h1>
+          <p class="intro">See which fruit and vegetables are normally harvested in {{LOCATION}} each month. This is the same fresh-harvest catalogue used by In Season on TRMNL.</p>
           <a class="recipe-link" href="https://trmnl.com/recipes/407471">Install In Season on TRMNL</a>
           <nav aria-label="Jump to a month">
 {{MONTH_NAV}}
@@ -95,7 +95,7 @@
       <section class="calendar-section" aria-labelledby="calendar-title">
         <h2 class="ins-card-title" id="calendar-title">What's in season each month?</h2>
         <table class="calendar" role="table">
-          <caption>Typical UK fresh harvests, grouped into fruit and vegetables. Months with no fruit listed have no fresh fruit harvests in this catalogue.</caption>
+          <caption>{{CAPTION}}</caption>
           <thead>
             <tr><th scope="col">Month</th><th scope="col">Fruit</th><th scope="col">Vegetables</th></tr>
           </thead>
@@ -106,25 +106,25 @@
       </section>
       <section class="method" aria-labelledby="harvest-title">
         <h2 class="ins-card-title" id="harvest-title">Fresh harvests, rather than shop availability</h2>
-        <p>A crop appears when UK growers normally harvest it during that month. The calendar excludes imports and produce available only from long-term storage, heated greenhouses, or other protected methods.</p>
-        <p>British apples sold in winter may have been stored after harvest. A blank fruit month does not mean shops have no British fruit.</p>
-        <p>This is a selected catalogue of common fruit and vegetables, not a complete list of every UK crop. Herbs, mushrooms, nuts and rhubarb are outside its scope. Tomatoes, peppers and cucumbers are grouped with vegetables.</p>
+        <p>A crop appears when growers in {{LOCATION}} normally harvest it during that month. The calendar excludes imports and produce available only from long-term storage, heated greenhouses, or other protected methods.</p>
+        <p>{{AVAILABILITY_NOTE}}</p>
+        <p>This is a selected catalogue of common fruit and vegetables, not a complete list of every crop in {{LOCATION}}. Herbs, mushrooms, nuts and rhubarb are outside its scope. Tomatoes, peppers and cucumbers are grouped with vegetables.</p>
       </section>
       <section class="method" aria-labelledby="regional-title">
-        <h2 class="ins-card-title" id="regional-title">Seasons vary across the UK</h2>
+        <h2 class="ins-card-title" id="regional-title">Seasons vary across {{LOCATION}}</h2>
         <p>This is an approximate national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and farming method can shift harvest dates by several weeks. Harvests may begin earlier in warmer areas and later in cooler areas.</p>
-        <p>Use the calendar to plan seasonal meals, then check what's being harvested by growers near you. The month ranges describe typical seasons rather than a prediction for this year's weather.</p>
+{{REGIONAL_NOTE}}        <p>Use the calendar to plan seasonal meals, then check what's being harvested by growers near you. The month ranges describe typical seasons rather than a prediction for this year's weather.</p>
       </section>
       <section class="country" aria-labelledby="sources-title">
-        <h2 class="ins-card-title" id="sources-title">UK calendar sources</h2>
+        <h2 class="ins-card-title" id="sources-title">{{TITLE_COUNTRY}} calendar sources</h2>
         <ul>
 {{SOURCES}}
         </ul>
-        <p>The catalogue draws on RHS fruit gardening calendars, vegetable crop planning and harvesting guidance, alongside the council's seasonal eating guide. <a href="../#united-kingdom">Read the source guide and methodology</a> for how evidence is selected.</p>
+        <p>{{SOURCE_SUMMARY}} <a href="../#{{SLUG}}">Read the source guide and methodology</a> for how evidence is selected.</p>
       </section>
     </main>
     <footer>
-      <a href="../">In Season sources and methodology</a>. An approximate national harvest guide for the United Kingdom.
+      <a href="../">In Season sources and methodology</a>. An approximate national harvest guide for {{LOCATION}}.
     </footer>
   </body>
 </html>
