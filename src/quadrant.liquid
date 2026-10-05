@@ -20,7 +20,7 @@
           {% for category in compact.quadrant.fruits.categories %}
             <div class="ins-category">
               <div class="ins-category__name">{{ category.name | escape }}</div>
-              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>
           {% endfor %}
           {% if fruit_count == 0 %}
@@ -41,7 +41,7 @@
           {% for category in compact.quadrant.vegetables.categories %}
             <div class="ins-category">
               <div class="ins-category__name">{{ category.name | escape }}</div>
-              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>
           {% endfor %}
           {% if vegetable_count == 0 %}
@@ -53,6 +53,7 @@
         </div>
       </section>
       </div>
+      {% if has_season_changes %}<div class="ins-season-legend">↑ Starting · ↓ Finishing this month</div>{% endif %}
     {% else %}
       <div class="ins-quiet rounded flex flex--col flex--center text--center">
         <div class="label label--small label--inverted">A quiet month</div>

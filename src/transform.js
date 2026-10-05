@@ -1135,13 +1135,15 @@ function compareByPopularity(first, second) {
   return first.popularity - second.popularity || compareByName(first, second);
 }
 
-function presentItem(item, countryCode) {
+function presentItem(item, countryCode, month) {
   const produce = PRODUCE[item.id];
   return {
     id: item.id,
     name: displayName(item.id, countryCode),
     category: produce.category,
     popularity: item.popularity,
+    is_starting: !item.months.includes(month === 1 ? 12 : month - 1),
+    is_finishing: !item.months.includes(month === 12 ? 1 : month + 1),
   };
 }
 
@@ -1304,6 +1306,7 @@ function emptyPayload({ now, countryCode = null, errorMessage }) {
   return {
     has_data: false,
     has_items: false,
+    has_season_changes: false,
     country_code: countryCode,
     country_name: null,
     country_short_name: null,
@@ -1341,7 +1344,7 @@ function transformSeasonality(input, now = () => new Date()) {
   );
   const currentItems = country.items
     .filter((item) => item.months.includes(month))
-    .map((item) => presentItem(item, countryCode));
+    .map((item) => presentItem(item, countryCode, month));
   const fruits = currentItems
     .filter((item) => item.category === "fruit")
     .sort(compareByName);
@@ -1352,6 +1355,9 @@ function transformSeasonality(input, now = () => new Date()) {
   return {
     has_data: true,
     has_items: currentItems.length > 0,
+    has_season_changes: currentItems.some(
+      (item) => item.is_starting || item.is_finishing
+    ),
     country_code: countryCode,
     country_name: country.name,
     country_short_name: country.short_name,

@@ -14,6 +14,7 @@ An [In Season recipe for TRMNL](https://trmnl.com/recipes/407471) that lists fru
 
 - Covers the United Kingdom, Ireland, the Netherlands, Belgium, France, Germany, United States, Canada, Australia, and New Zealand
 - Uses local names such as "aubergine," "eggplant," "courgette," "zucchini," "capsicum," and "kūmara"
+- Marks produce starting its harvest season this month with ↑ and finishing with ↓
 - Omits imported produce and items available only from storage or heated greenhouses
 - Supports full, half-horizontal, half-vertical, and quadrant layouts
 - Shows every category and matching item in the full layout
@@ -31,6 +32,8 @@ The plugin has a required Country dropdown and a versioned seasonality catalogue
 4. Groups all matching produce for the full layout and builds shorter category summaries for smaller layouts.
 
 The result is a national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and growing method can shift a harvest by several weeks. See the [public source guide](https://oneill9.github.io/trmnl-in-season/) or [Data sources and methodology](docs/DATA_SOURCES.md) for the evidence policy and source list.
+
+The ↑ marker means a crop is in the catalogue this month but was absent last month. The ↓ marker means it is in the catalogue this month but will be absent next month. A one-month harvest window gets both markers; year-round crops get neither. These refer to typical harvest windows, not exact dates or shop availability.
 
 ## Deploy to TRMNL
 

@@ -60,6 +60,83 @@ function names(items) {
 }
 
 describe("TRMNL seasonality transform", () => {
+  test.each([
+    ["united_kingdom", "2026-08-15", "apple", true, false],
+    ["united_kingdom", "2026-08-15", "cherry", false, true],
+    ["united_kingdom", "2026-10-15", "apple", false, true],
+    ["united_kingdom", "2026-10-15", "cabbage", false, false],
+    ["australia", "2026-12-15", "blackberry", true, false],
+    ["australia", "2026-12-15", "asparagus", false, true],
+    ["australia", "2026-01-15", "grape", true, false],
+    ["australia", "2026-01-15", "apricot", false, true],
+    ["australia", "2026-01-15", "blackberry", false, false],
+    ["france", "2026-10-15", "quince", true, true],
+  ])(
+    "%s %s marks %s starting=%s finishing=%s",
+    (country, date, id, isStarting, isFinishing) => {
+      const result = new SeasonalityDriver()
+        .forCountry(country)
+        .at(`${date}T12:00:00.000Z`)
+        .execute();
+      const item = [...result.fruits, ...result.vegetables].find(
+        (produce) => produce.id === id
+      );
+
+      expect(item).toMatchObject({
+        is_starting: isStarting,
+        is_finishing: isFinishing,
+      });
+    }
+  );
+
+  test("season markers follow the user's local month", () => {
+    const result = new SeasonalityDriver()
+      .inTimeZone("America/New_York")
+      .at("2026-11-01T00:30:00.000Z")
+      .execute();
+
+    expect(result.month).toBe(10);
+    expect(result.fruits.find((item) => item.id === "apple")).toMatchObject({
+      is_starting: false,
+      is_finishing: true,
+    });
+  });
+
+  test("preserves season markers in every layout's category examples", () => {
+    const result = new SeasonalityDriver().execute();
+    const items = [...result.fruits, ...result.vegetables];
+    const layouts = [result.shortlist, ...Object.values(result.compact)];
+
+    layouts.forEach((layout) => {
+      [layout.fruits, layout.vegetables].forEach((panel) => {
+        panel.categories.forEach((category) => {
+          category.examples.forEach((example) => {
+            const original = items.find((item) => item.id === example.id);
+
+            expect(typeof example.is_starting).toBe("boolean");
+            expect(typeof example.is_finishing).toBe("boolean");
+            expect(example).toEqual(original);
+          });
+        });
+      });
+    });
+  });
+
+  test("shows the season legend only when harvest windows change", () => {
+    const october = new SeasonalityDriver().at("2026-10-15T12:00:00.000Z").execute();
+    const january = new SeasonalityDriver().at("2026-01-15T12:00:00.000Z").execute();
+    const missing = new SeasonalityDriver().withoutCountry().execute();
+    const quiet = new SeasonalityDriver()
+      .forCountry("canada")
+      .at("2026-02-15T12:00:00.000Z")
+      .execute();
+
+    expect(october.has_season_changes).toBe(true);
+    expect(january.has_season_changes).toBe(false);
+    expect(missing.has_season_changes).toBe(false);
+    expect(quiet.has_season_changes).toBe(false);
+  });
+
   test("returns the complete UK August harvest in alphabetical categories", () => {
     const result = new SeasonalityDriver().execute();
 

@@ -4,6 +4,7 @@
       <div class="ins-brand flex flex--row flex--center-y">
         <span class="ins-brand__name">In Season</span>
       </div>
+      {% if has_season_changes %}<div class="ins-season-legend">↑ Starting · ↓ Finishing this month</div>{% endif %}
       <div class="ins-header__copy">
         <div class="ins-heading title title--small"><span class="ins-heading__month">{{ month_name | escape }}</span> <span class="ins-heading__place">{{ country_short_name | escape }}</span></div>
       </div>
@@ -20,7 +21,7 @@
           {% for category in compact.half_horizontal.fruits.categories %}
             <div class="ins-category" style="--ins-category-lines: {{ category.line_limit }}">
               <div class="ins-category__name">{{ category.name | escape }}</div>
-              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>
           {% endfor %}
           {% if fruit_count == 0 %}
@@ -41,7 +42,7 @@
           {% for category in compact.half_horizontal.vegetables.categories %}
             <div class="ins-category" style="--ins-category-lines: {{ category.line_limit }}">
               <div class="ins-category__name">{{ category.name | escape }}</div>
-              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+              <div class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
             </div>
           {% endfor %}
           {% if vegetable_count == 0 %}

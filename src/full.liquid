@@ -18,7 +18,7 @@
         <div class="ins-category-list ins-category-list--fruit">
           {% for category in shortlist.fruits.categories %}
             <div class="ins-category">
-              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
+              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
             </div>
           {% endfor %}
           {% if fruit_count == 0 %}
@@ -37,7 +37,7 @@
         <div class="ins-category-list ins-category-list--vegetables">
           {% for category in shortlist.vegetables.categories %}
             <div class="ins-category">
-              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
+              <span class="ins-category__name">{{ category.name | escape }}</span> <span class="ins-category__examples">{% for example in category.examples %}{{ example.name | escape }}{% if example.is_starting %}<span class="ins-season-marker" aria-label="Starting this month">↑</span>{% endif %}{% if example.is_finishing %}<span class="ins-season-marker" aria-label="Finishing this month">↓</span>{% endif %}{% unless forloop.last %}, {% endunless %}{% endfor %}</span>
             </div>
           {% endfor %}
           {% if vegetable_count == 0 %}
@@ -57,7 +57,8 @@
       </div>
     {% endif %}
 
-    <div class="ins-footer flex flex--row flex--between flex--center-y gap--medium">
+    <div class="ins-footer">
+      {% if has_season_changes %}<div class="ins-season-legend">↑ Starting · ↓ Finishing this month</div>{% endif %}
       <span class="ins-footer__label label label--base">Sources and methodology</span>
       <img class="ins-footer__qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAABaCAYAAAA4qEECAAAFZklEQVR4Ae3BMXKtCBDAQIl697+y9k82AYWx1yai2/7h9ecOXo84eD3i4PWIg9cjDl6POHg94uD1iA9fUBkVm8qo2FRGxVAZFUNlVAyVUbGpXKkYKmcqhsodFUPlJyquHLwe8eEmlTsqhsqo2Cq2ik3lSsVQGRXfUbGpnKm4Q+WOg9cjPnxTxaayVWwqo2JTGRVDZVRsKldUtoqhckZlq7iicqbiOw5ej/jwhYorFZvKVjFUzqhsKqNiq9gqNpWfUBkVf+ng9YgPP6Ryh8qZiqEyKobKVrGpjIqtYqhcqRgqTzp4PeLDTSqj4kzFGZVRsalsKqNiUxkVm8pWMSqGyh0VVyp+w8HrER++oDIqhsqoGCqbyqi4UrGpbCpnKobKqDhTMVRGxVC5Q+U3Hbwe8eELFUNlUzlTcYfKlYozKldURsWmMiqGylAZFaPiLxy8HvHhl6j8RMVQuaIyKjaVUbGpjIozFWdURsUdKqPiysHrER++oDIqhspWMVRGxRmVUTEqhsoVlVGxqYyKreKMylYxVEbFqBgqW8X/cfB6xIebVEbFULmiMiruqBgqW8WmMiqGyqg4o3KlYqjcofITB69HfPhCxVAZKpvKmYqhckZlVFxRGRVnKs6onKm4UjFURsVQ2SqGyh0Hr0d8+ILKqNhURsWmslUMla1iqIyKMxVDZVRcUbmiMiq2iqFypWKofMfB6xH2DxdU7qjYVEbFpjIqNpUzFZvKqBgqP1ExVLaKTWVUDJWt4o6D1yM+3FQxVEbFUBkqV1TOqIyKKyqjYqsYKmcqhsodKqPiDpVRceXg9YgPX6gYKqNiqGwV/4fKT6icqRgqVyruUBkVQ+U7Dl6P+PAFlTtUzlTcUTFURsVQGRXfoXKHypmKUTFU/o+D1yM+3FRxpmJTuVIxVEbFVrFVnFH5iYqtYqiMijMVW8VQuePg9YgPP1SxqWwVQ+U7VEbFpnJHxVC5Q2VT2So2lVExKu44eD3C/uEHVEbFUBkVZ1RGxaYyKs6o/IaKTeVMxRmVrWKojIorB69HfPiCyh0VQ2VUbBWbyqjYVO6oOKNyR8UZla3iSsUdB69HfLipYqiMiqHyExWbyh0Vm8qVik1lq9gqhsqZik1lVFw5eD3iw00qo+JMxRWVUbGpXKn4DSpbxRmVMxWbyqi44+D1CPuHG1SuVJxR2SqGyndUDJU7KjaVMxVXVEbFUDlTceXg9YgPX1DZKobKqBgqW8VWsVUMla1iqPxExaayVWwqo2KojIozFT9x8HqE/cM3qIyKoTIqhspWMVS2iqHyGyo2lVExVEbFUNkq7lAZFd9x8HrEhy+onFHZVLaKMxW/qeJMxRmVrWKoXKnYVEbFHQevR3z4QsVQGRWbylYxVEbFprJVDJU7Ks6obBVbxVC5UjFURsVvOHg9wv7hgsqouENlVAyVUfGbVM5UbCqjYqhsFZvKqBgqW8VQ2SquHLweYf/wh1RGxVD5jopNZVScUbmjYqiMir908HrEhy+o/ETFlYqhMiqGyqgYKqPijMqo2CqGyqgYKldUfqLiysHrER9uqrhD5Q6VTeWKyqi4UjFURsUZlVFxpuIOlTsOXo/48E0qZyrOVFypuFKxqWwVQ+WKylZxh8qZiu84eD3iwx9T2SqGylA5UzFURsWo2FRGxVAZFUNlqxgqo+IJB69HfPhjFUNlqGwVQ2VT2VRGxVYxVM5UbCqj4kkHr0d8+KaK71AZFUNlU7lSMVQ2lVExKs6obBXfUfEbDl6P+HCTyk9UnKnYVEbFprKpjIqhslUMlVFxRWVUbCq/6eD1CPuH1587eD3i4PWIg9cjDl6POHg94uD1iIPXI/4DwMeV1GyJPJMAAAAASUVORK5CYII=" alt="Sources and methodology QR code">
     </div>

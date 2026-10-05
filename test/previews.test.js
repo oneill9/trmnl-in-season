@@ -5,6 +5,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { generate: generateQrCandidates } = require("../scripts/generate-qr");
+const { main: generatePreviews } = require("../scripts/generate-previews");
 
 class DevicePreviewDriver {
   constructor() {
@@ -53,6 +54,53 @@ class DevicePreviewDriver {
 }
 
 describe("device preview generator", () => {
+  test.each(["full", "half_horizontal", "half_vertical", "quadrant"])(
+    "%s shows season markers beside produce with an explanatory legend",
+    (layout) => {
+      const previews = new DevicePreviewDriver();
+      jest.useFakeTimers().setSystemTime(new Date("2026-08-15T12:00:00.000Z"));
+
+      try {
+        generatePreviews({ outDir: previews.outDir });
+        const page = fs.readFileSync(
+          path.join(previews.outDir, `${layout}-og-landscape.html`),
+          "utf8"
+        );
+
+        expect(page).toContain('Apples<span class="ins-season-marker" aria-label="Starting this month">↑</span>');
+        expect(page).toContain('Cherries<span class="ins-season-marker" aria-label="Finishing this month">↓</span>');
+        expect(page).not.toMatch(/Cabbage<span class="ins-season-marker"/);
+        expect(page).toContain('class="ins-season-legend">↑ Starting · ↓ Finishing this month');
+        if (layout === "full") {
+          const sourcesLabel = page.match(
+            /<span class="ins-footer__label[^"]*">([\s\S]*?)<\/span>/
+          )?.[1];
+
+          expect(sourcesLabel).toBe("Sources and methodology");
+        }
+      } finally {
+        jest.useRealTimers();
+        previews.cleanup();
+      }
+    }
+  );
+
+  test("omits the legend and markers when no harvest windows change", () => {
+    const previews = new DevicePreviewDriver();
+    jest.useFakeTimers().setSystemTime(new Date("2026-01-15T12:00:00.000Z"));
+
+    try {
+      generatePreviews({ outDir: previews.outDir });
+      const page = previews.fullLandscape();
+
+      expect(page).not.toContain('class="ins-season-marker"');
+      expect(page).not.toContain('class="ins-season-legend"');
+    } finally {
+      jest.useRealTimers();
+      previews.cleanup();
+    }
+  });
+
   test("can preview a generated QR without changing the source template", () => {
     const previews = new DevicePreviewDriver();
     const sourceBefore = previews.sourceTemplate();
