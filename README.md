@@ -55,6 +55,8 @@ The [TRMNL workflow](.github/workflows/trmnl.yml) runs the JavaScript tests and 
 
 The [GitHub Pages workflow](.github/workflows/pages.yml) publishes the static source guide from `docs/` when its content changes on `main`.
 
+The [UK seasonal calendar](https://oneill9.github.io/trmnl-in-season/united-kingdom/) is generated from the plugin's catalogue. After changing `src/transform.js` or the calendar template in `scripts/templates/united-kingdom.html`, run `npm run calendar` to update `docs/united-kingdom/index.html` before testing. The Pages workflow also regenerates the calendar before deployment and runs when the catalogue or generator changes.
+
 [Dependabot](.github/dependabot.yml) checks GitHub Actions, Bundler, and npm dependencies every Monday. It groups minor and patch releases by ecosystem and opens separate pull requests for major upgrades.
 
 Add a repository secret named `TRMNL_API_KEY` containing the user API key from the TRMNL account page. The committed plugin ID in `src/settings.yml` ensures deployments update the published recipe instead of creating another one.

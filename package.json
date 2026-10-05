@@ -4,6 +4,7 @@
   "description": "TRMNL plugin showing locally harvested fruit and vegetables by country",
   "scripts": {
     "test": "jest --verbose --runInBand",
+    "calendar": "node scripts/generate-calendar.js",
     "previews": "node scripts/generate-previews.js",
     "qr": "node scripts/generate-qr.js"
   },

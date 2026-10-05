@@ -127,13 +127,14 @@ describe("public source guide", () => {
     expect(page.reference("llms.md")).toContain("domestic fresh harvest");
   });
 
-  test("provides a sitemap containing the canonical source guide URL", () => {
+  test("links the UK calendar from the guide and includes both canonical URLs in the sitemap", () => {
     const page = new SourcesPageDriver();
     const canonicalUrl = "https://oneill9.github.io/trmnl-in-season/";
 
     expect(page.canonicalUrls()).toEqual([canonicalUrl]);
     expect(page.sitemap()).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(page.sitemapUrls()).toEqual([canonicalUrl]);
+    expect(page.page()).toContain('href="united-kingdom/"');
+    expect(page.sitemapUrls()).toEqual([canonicalUrl, `${canonicalUrl}united-kingdom/`]);
   });
 
   test("notifies IndexNow after deployment for every sitemap URL", () => {
@@ -224,13 +225,15 @@ describe("public source guide", () => {
 
     expect(page.page()).toContain("in-season-icon.png");
     expect(page.docsFileExists("in-season-icon.png")).toBe(true);
+    expect(page.page()).toContain('href="style.css"');
+    expect(page.docsFileExists("style.css")).toBe(true);
   });
 
   test("themes the page with the TRMNL site palette", () => {
     const page = new SourcesPageDriver();
 
-    expect(page.page()).toContain("#f8654b");
-    expect(page.page()).toContain("#0d0d0d");
+    expect(page.reference("style.css")).toContain("#f8654b");
+    expect(page.reference("style.css")).toContain("#0d0d0d");
     expect(page.page()).not.toContain("trmnl.com/css");
   });
 
@@ -245,6 +248,10 @@ describe("public source guide", () => {
     expect(workflow).toContain("pages: write");
     expect(workflow).toContain("id-token: write");
     expect(workflow).toContain("path: docs");
+    expect(workflow).toContain("node scripts/generate-calendar.js");
+    expect(workflow).toContain("- src/transform.js");
+    expect(workflow).toContain("- scripts/generate-calendar.js");
+    expect(workflow).toContain("- scripts/templates/**");
   });
 
   test("uses immutable GitHub Action revisions", () => {
