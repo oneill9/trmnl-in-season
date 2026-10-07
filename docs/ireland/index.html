@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en-IE">
+  <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MN20E35ELS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-MN20E35ELS', {
+        cookie_path: '/trmnl-in-season/',
+        cookie_prefix: 'trmnl_in_season'
+      });
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Find Ireland seasonal fruit and vegetables for every month. A fresh-harvest calendar with evidence sources and regional guidance.">
+    <title>Ireland Seasonal Fruit &amp; Vegetable Calendar | In Season</title>
+    <link rel="canonical" href="https://oneill9.github.io/trmnl-in-season/ireland/">
+    <link rel="icon" type="image/png" href="../in-season-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..800&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+      .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.9rem; }
+      .calendar-section { margin-top: 2rem; }
+      .calendar {
+        width: 100%;
+        margin-top: 1.25rem;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 0.9rem;
+      }
+      .calendar caption { text-align: left; color: var(--muted); padding-bottom: 1rem; }
+      .calendar th,
+      .calendar td {
+        padding: 1rem 0.85rem;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--pill-line);
+      }
+      .calendar thead th { color: var(--accent); }
+      .calendar thead th:first-child { width: 18%; }
+      .calendar thead th:nth-child(2) { width: 32%; }
+      .calendar tr { scroll-margin-top: 1rem; }
+      .calendar tbody tr:nth-child(odd) { background: var(--card); }
+      .calendar tbody tr:target { outline: 2px solid var(--accent); outline-offset: -2px; }
+      .calendar .note { margin: 0; }
+      .harvest-list { margin: 0; padding: 0; list-style: none; }
+      .harvest-list li { display: inline; }
+      .harvest-list li:not(:last-child)::after { content: ", "; }
+      .calendar-label { display: none; }
+
+      @media (max-width: 520px) {
+        .calendar { font-size: 0.95rem; }
+        .calendar thead {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+        }
+        .calendar tbody,
+        .calendar tr,
+        .calendar th,
+        .calendar td { display: block; }
+        .calendar tbody tr { padding: 1rem; border-bottom: 1px solid var(--pill-line); }
+        .calendar th,
+        .calendar td { padding: 0; border: 0; }
+        .calendar tbody th { color: var(--accent); font-size: 1.1rem; }
+        .calendar td { margin-top: 0.85rem; }
+        .calendar-label { display: block; font-weight: 700; margin-bottom: 0.25rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="back-link" href="../">In Season sources and methodology</a>
+      <div class="ins-header-row">
+        <div class="ins-tile">
+          <img src="../in-season-icon.png" alt="In Season aubergine icon" width="64" height="64">
+        </div>
+        <div>
+          <p class="ins-eyebrow">Ireland harvest guide</p>
+          <h1 class="ins-hero">Ireland seasonal fruit and vegetable calendar</h1>
+          <p class="intro">See which fruit and vegetables are normally harvested in Ireland each month. This is the same fresh-harvest catalogue used by In Season on TRMNL.</p>
+          <a class="recipe-link" href="https://trmnl.com/recipes/407471">Install In Season on TRMNL</a>
+          <nav aria-label="Jump to a month">
+            <a href="#january">January</a>
+            <a href="#february">February</a>
+            <a href="#march">March</a>
+            <a href="#april">April</a>
+            <a href="#may">May</a>
+            <a href="#june">June</a>
+            <a href="#july">July</a>
+            <a href="#august">August</a>
+            <a href="#september">September</a>
+            <a href="#october">October</a>
+            <a href="#november">November</a>
+            <a href="#december">December</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="calendar-section" aria-labelledby="calendar-title">
+        <h2 class="ins-card-title" id="calendar-title">What's in season each month?</h2>
+        <table class="calendar" role="table">
+          <caption>Typical fresh harvests in Ireland, grouped into fruit and vegetables. Empty lists mean no fresh harvests in this selected catalogue.</caption>
+          <thead>
+            <tr><th scope="col">Month</th><th scope="col">Fruit</th><th scope="col">Vegetables</th></tr>
+          </thead>
+          <tbody>
+            <tr id="january" data-month="1">
+              <th scope="row">January</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="celeriac">Celeriac</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li><li data-produce="swede">Swedes</li><li data-produce="turnip">Turnips</li></ul></td>
+            </tr>
+            <tr id="february" data-month="2">
+              <th scope="row">February</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="celeriac">Celeriac</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li><li data-produce="swede">Swedes</li><li data-produce="turnip">Turnips</li></ul></td>
+            </tr>
+            <tr id="march" data-month="3">
+              <th scope="row">March</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="cabbage">Cabbage</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li></ul></td>
+            </tr>
+            <tr id="april" data-month="4">
+              <th scope="row">April</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="asparagus">Asparagus</li><li data-produce="cabbage">Cabbage</li><li data-produce="radish">Radishes</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="may" data-month="5">
+              <th scope="row">May</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="strawberry">Strawberries</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="asparagus">Asparagus</li><li data-produce="cabbage">Cabbage</li><li data-produce="lettuce">Lettuce</li><li data-produce="pea">Peas</li><li data-produce="radish">Radishes</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="june" data-month="6">
+              <th scope="row">June</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="gooseberry">Gooseberries</li><li data-produce="raspberry">Raspberries</li><li data-produce="strawberry">Strawberries</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="asparagus">Asparagus</li><li data-produce="beetroot">Beetroot</li><li data-produce="broad_bean">Broad beans</li><li data-produce="broccoli">Broccoli</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="chard">Chard</li><li data-produce="courgette">Courgettes</li><li data-produce="cucumber">Cucumbers</li><li data-produce="lettuce">Lettuce</li><li data-produce="pea">Peas</li><li data-produce="potato">Potatoes</li><li data-produce="radish">Radishes</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="turnip">Turnips</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="july" data-month="7">
+              <th scope="row">July</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="blackcurrant">Blackcurrants</li><li data-produce="blueberry">Blueberries</li><li data-produce="cherry">Cherries</li><li data-produce="gooseberry">Gooseberries</li><li data-produce="plum">Plums</li><li data-produce="raspberry">Raspberries</li><li data-produce="strawberry">Strawberries</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="beetroot">Beetroot</li><li data-produce="broad_bean">Broad beans</li><li data-produce="broccoli">Broccoli</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="celery">Celery</li><li data-produce="chard">Chard</li><li data-produce="courgette">Courgettes</li><li data-produce="cucumber">Cucumbers</li><li data-produce="fennel">Fennel</li><li data-produce="french_bean">French beans</li><li data-produce="garlic">Garlic</li><li data-produce="lettuce">Lettuce</li><li data-produce="onion">Onions</li><li data-produce="pea">Peas</li><li data-produce="potato">Potatoes</li><li data-produce="radish">Radishes</li><li data-produce="runner_bean">Runner beans</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="tomato">Tomatoes</li><li data-produce="turnip">Turnips</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="august" data-month="8">
+              <th scope="row">August</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="apple">Apples</li><li data-produce="blackberry">Blackberries</li><li data-produce="blackcurrant">Blackcurrants</li><li data-produce="blueberry">Blueberries</li><li data-produce="cherry">Cherries</li><li data-produce="gooseberry">Gooseberries</li><li data-produce="pear">Pears</li><li data-produce="plum">Plums</li><li data-produce="raspberry">Raspberries</li><li data-produce="strawberry">Strawberries</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="beetroot">Beetroot</li><li data-produce="broad_bean">Broad beans</li><li data-produce="broccoli">Broccoli</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="celery">Celery</li><li data-produce="chard">Chard</li><li data-produce="courgette">Courgettes</li><li data-produce="cucumber">Cucumbers</li><li data-produce="fennel">Fennel</li><li data-produce="french_bean">French beans</li><li data-produce="garlic">Garlic</li><li data-produce="lettuce">Lettuce</li><li data-produce="onion">Onions</li><li data-produce="pea">Peas</li><li data-produce="potato">Potatoes</li><li data-produce="radish">Radishes</li><li data-produce="runner_bean">Runner beans</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="squash">Squash</li><li data-produce="corn">Sweetcorn</li><li data-produce="tomato">Tomatoes</li><li data-produce="turnip">Turnips</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="september" data-month="9">
+              <th scope="row">September</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="apple">Apples</li><li data-produce="blackberry">Blackberries</li><li data-produce="blueberry">Blueberries</li><li data-produce="pear">Pears</li><li data-produce="plum">Plums</li><li data-produce="raspberry">Raspberries</li><li data-produce="strawberry">Strawberries</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="beetroot">Beetroot</li><li data-produce="broad_bean">Broad beans</li><li data-produce="broccoli">Broccoli</li><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="celeriac">Celeriac</li><li data-produce="celery">Celery</li><li data-produce="chard">Chard</li><li data-produce="courgette">Courgettes</li><li data-produce="cucumber">Cucumbers</li><li data-produce="fennel">Fennel</li><li data-produce="french_bean">French beans</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="lettuce">Lettuce</li><li data-produce="onion">Onions</li><li data-produce="parsnip">Parsnips</li><li data-produce="potato">Potatoes</li><li data-produce="pumpkin">Pumpkins</li><li data-produce="radish">Radishes</li><li data-produce="runner_bean">Runner beans</li><li data-produce="spinach">Spinach</li><li data-produce="spring_onion">Spring onions</li><li data-produce="squash">Squash</li><li data-produce="swede">Swedes</li><li data-produce="corn">Sweetcorn</li><li data-produce="tomato">Tomatoes</li><li data-produce="turnip">Turnips</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="october" data-month="10">
+              <th scope="row">October</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><ul class="harvest-list"><li data-produce="apple">Apples</li><li data-produce="blackberry">Blackberries</li><li data-produce="pear">Pears</li></ul></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="beetroot">Beetroot</li><li data-produce="broccoli">Broccoli</li><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="celeriac">Celeriac</li><li data-produce="celery">Celery</li><li data-produce="chard">Chard</li><li data-produce="fennel">Fennel</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li><li data-produce="potato">Potatoes</li><li data-produce="pumpkin">Pumpkins</li><li data-produce="radish">Radishes</li><li data-produce="spinach">Spinach</li><li data-produce="squash">Squash</li><li data-produce="swede">Swedes</li><li data-produce="turnip">Turnips</li><li data-produce="watercress">Watercress</li></ul></td>
+            </tr>
+            <tr id="november" data-month="11">
+              <th scope="row">November</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="broccoli">Broccoli</li><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="carrot">Carrots</li><li data-produce="cauliflower">Cauliflower</li><li data-produce="celeriac">Celeriac</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li><li data-produce="pumpkin">Pumpkins</li><li data-produce="squash">Squash</li><li data-produce="swede">Swedes</li><li data-produce="turnip">Turnips</li></ul></td>
+            </tr>
+            <tr id="december" data-month="12">
+              <th scope="row">December</th>
+              <td data-category="fruit"><span class="calendar-label" aria-hidden="true">Fruit</span><p class="note">No fresh fruit harvests in this catalogue.</p></td>
+              <td data-category="vegetable"><span class="calendar-label" aria-hidden="true">Vegetables</span><ul class="harvest-list"><li data-produce="brussels_sprout">Brussels sprouts</li><li data-produce="cabbage">Cabbage</li><li data-produce="celeriac">Celeriac</li><li data-produce="kale">Kale</li><li data-produce="leek">Leeks</li><li data-produce="parsnip">Parsnips</li><li data-produce="swede">Swedes</li><li data-produce="turnip">Turnips</li></ul></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="method" aria-labelledby="harvest-title">
+        <h2 class="ins-card-title" id="harvest-title">Fresh harvests, rather than shop availability</h2>
+        <p>A crop appears when growers in Ireland normally harvest it during that month. The calendar excludes imports and produce available only from long-term storage, heated greenhouses, or other protected methods.</p>
+        <p>Locally grown produce sold outside these harvest months may have been stored after harvest. A blank fruit or vegetable month does not mean shops have no locally grown produce.</p>
+        <p>This is a selected catalogue of common fruit and vegetables, not a complete list of every crop in Ireland. Herbs, mushrooms, nuts and rhubarb are outside its scope. Tomatoes, peppers and cucumbers are grouped with vegetables.</p>
+      </section>
+      <section class="method" aria-labelledby="regional-title">
+        <h2 class="ins-card-title" id="regional-title">Seasons vary across Ireland</h2>
+        <p>This is an approximate national guide, not a local crop forecast. Weather, latitude, altitude, cultivar, and farming method can shift harvest dates by several weeks. Harvests may begin earlier in warmer areas and later in cooler areas.</p>
+        <p>Bord Bia provides the national seasonal guide. Coastal exposure and local growing conditions can shift harvests within Ireland, so check with nearby growers.</p>
+        <p>Use the calendar to plan seasonal meals, then check what's being harvested by growers near you. The month ranges describe typical seasons rather than a prediction for this year's weather.</p>
+      </section>
+      <section class="country" aria-labelledby="sources-title">
+        <h2 class="ins-card-title" id="sources-title">Ireland calendar sources</h2>
+        <ul>
+          <li><a href="https://www.bordbia.ie/whats-in-season/">Bord Bia Best in Season calendar</a></li>
+        </ul>
+        <p>The catalogue draws on Bord Bia&#39;s Best in Season calendar, using fresh domestic harvest periods rather than storage or protected-growing availability. <a href="../#ireland">Read the source guide and methodology</a> for how evidence is selected.</p>
+      </section>
+    </main>
+    <footer>
+      <a href="../">In Season sources and methodology</a>. An approximate national harvest guide for Ireland.
+    </footer>
+  </body>
+</html>

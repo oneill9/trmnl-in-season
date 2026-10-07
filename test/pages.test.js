@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { COUNTRIES } = require("../src/transform");
 
 class SourcesPageDriver {
   constructor() {
@@ -127,14 +128,18 @@ describe("public source guide", () => {
     expect(page.reference("llms.md")).toContain("domestic fresh harvest");
   });
 
-  test("links the UK calendar from the guide and includes both canonical URLs in the sitemap", () => {
+  test("links every calendar from the guide and includes every canonical URL in the sitemap", () => {
     const page = new SourcesPageDriver();
     const canonicalUrl = "https://oneill9.github.io/trmnl-in-season/";
 
     expect(page.canonicalUrls()).toEqual([canonicalUrl]);
     expect(page.sitemap()).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect(page.page()).toContain('href="united-kingdom/"');
-    expect(page.sitemapUrls()).toEqual([canonicalUrl, `${canonicalUrl}united-kingdom/`]);
+    const slugs = Object.keys(COUNTRIES).map((code) => code.replace(/_/g, "-"));
+    for (const slug of slugs) {
+      const section = page.page().match(new RegExp(`<section class="country" id="${slug}">([\\s\\S]*?)</section>`))[1];
+      expect(section).toContain(`href="${slug}/"`);
+    }
+    expect(page.sitemapUrls()).toEqual([canonicalUrl, ...slugs.map((slug) => `${canonicalUrl}${slug}/`)]);
   });
 
   test("notifies IndexNow after deployment for every sitemap URL", () => {
@@ -249,6 +254,7 @@ describe("public source guide", () => {
     expect(workflow).toContain("id-token: write");
     expect(workflow).toContain("path: docs");
     expect(workflow).toContain("node scripts/generate-calendar.js");
+    expect(workflow.indexOf("node scripts/generate-calendar.js")).toBeLessThan(workflow.indexOf("actions/upload-pages-artifact@"));
     expect(workflow).toContain("- src/transform.js");
     expect(workflow).toContain("- scripts/generate-calendar.js");
     expect(workflow).toContain("- scripts/templates/**");
