@@ -1,3 +1,3 @@
 source "https://rubygems.org"
 
-gem "trmnl_preview", "0.13.0"
+gem "trmnl_preview", "0.25.0"
