@@ -106,6 +106,54 @@ class SourcesPageDriver {
 }
 
 describe("public source guide", () => {
+  test("opens every country's calendar directly from the homepage navigation", () => {
+    const html = new SourcesPageDriver().page();
+    const navigation = html.match(/<nav\b[^>]*>([\s\S]*?)<\/nav>/)[1];
+    const links = [...navigation.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)];
+
+    expect(links.map((match) => ({ href: match[1], name: match[2] }))).toEqual(
+      Object.entries(COUNTRIES).map(([code, country]) => ({
+        href: `${code.replace(/_/g, "-")}/`,
+        name: country.name,
+      }))
+    );
+    for (const link of links) {
+      expect(fs.existsSync(path.join(__dirname, "..", "docs", link[1], "index.html"))).toBe(true);
+    }
+  });
+
+  test("makes the contact section easy to reach from the homepage header", () => {
+    const html = new SourcesPageDriver().page();
+    const header = html.match(/<header>([\s\S]*?)<\/header>/)[1];
+
+    expect(header).toContain('href="#contact"');
+    expect(html).toContain('id="contact"');
+    expect(html).toContain('href="mailto:lulls_parcel.0e@icloud.com?subject=In%20Season%20feedback"');
+  });
+
+  test.each([
+    ["", null],
+    ...Object.entries(COUNTRIES).map(([code, country]) => [code.replace(/_/g, "-"), country.name]),
+  ])("%s offers a public GitHub feedback draft and an email option", (slug, countryName) => {
+    const html = fs.readFileSync(path.join(__dirname, "..", "docs", slug, "index.html"), "utf8");
+    const feedback = html.match(/<a href="([^"]+)">Report a problem or suggest a change<\/a>/);
+
+    expect(feedback).not.toBeNull();
+    const url = new URL(feedback[1].replace(/&amp;/g, "&"));
+    expect(url.origin + url.pathname).toBe("https://github.com/oneill9/trmnl-in-season/issues/new");
+    expect(url.searchParams.get("title")).toBe(countryName ? `In Season feedback: ${countryName}` : "In Season feedback");
+    const body = url.searchParams.get("body");
+    expect(body).toContain(`Page: https://oneill9.github.io/trmnl-in-season/${slug ? `${slug}/` : ""}`);
+    expect(body).toContain(countryName ? `Country: ${countryName}` : "Country:");
+    expect(body).toContain("What would you like to report or suggest?");
+    expect(body).toContain("For a seasonal data correction, include the produce, months and a source link.");
+    expect(html).toContain("GitHub feedback is public and requires a GitHub account.");
+    expect(html).toContain(slug ? 'href="../#contact"' : 'href="mailto:');
+    if (slug) {
+      expect(html.match(/<footer>([\s\S]*?)<\/footer>/)[1]).toContain(feedback[0]);
+    }
+  });
+
   test("lets agents discover both raw references and the seasonal evidence guide", () => {
     const page = new SourcesPageDriver();
     const baseUrl = "https://oneill9.github.io/trmnl-in-season/";

@@ -116,6 +116,8 @@ function renderCalendar(countryCode = "united_kingdom") {
   const sources = sourceIds.map((id) =>
     `          <li><a href="${escapeHtml(SOURCES[id].url)}">${escapeHtml(SOURCES[id].title)}</a></li>`
   ).join("\n");
+  const feedbackBody = `Country: ${country.name}\nPage: https://oneill9.github.io/trmnl-in-season/${slug}/\n\nWhat would you like to report or suggest?\n\nFor a seasonal data correction, include the produce, months and a source link.\n`;
+  const feedbackUrl = `https://github.com/oneill9/trmnl-in-season/issues/new?title=${encodeURIComponent(`In Season feedback: ${country.name}`)}&body=${encodeURIComponent(feedbackBody)}`;
 
   const values = {
     LANG: escapeHtml(guidance.lang),
@@ -131,6 +133,7 @@ function renderCalendar(countryCode = "united_kingdom") {
     MONTH_NAV: navigation,
     MONTH_ROWS: rows,
     SOURCES: sources,
+    FEEDBACK_URL: escapeHtml(feedbackUrl),
   };
 
   return fs.readFileSync(TEMPLATE_PATH, "utf8")
