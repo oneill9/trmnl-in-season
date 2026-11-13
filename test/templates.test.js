@@ -467,20 +467,10 @@ class CompactLayoutDriver {
 
   hasWholeLineCategoryRows() {
     const listRule = this.categoryListRule();
-    const categoryRule = this.categoryRule();
 
     return (
       /grid-auto-rows:\s*max-content/.test(listRule ?? "") &&
-      /-webkit-box-orient:\s*vertical/.test(categoryRule ?? "") &&
-      /-webkit-line-clamp:\s*var\(--ins-category-lines\)/.test(
-        categoryRule ?? ""
-      )
-    );
-  }
-
-  hasCategoryLineBudgetMarkup() {
-    return this.markup.includes(
-      "--ins-category-lines: {{ category.line_limit }}"
+      this.markup.includes('data-clamp="{{ category.line_limit }}"')
     );
   }
 
@@ -493,12 +483,11 @@ class CompactLayoutDriver {
   }
 
   hasFlowingCategoryText() {
-    const categoryRule = this.categoryRule();
     const nameRule = this.categoryTextRule("name");
     const examplesRule = this.categoryTextRule("examples");
 
     return (
-      /display:\s*(?:block|-webkit-box)/.test(categoryRule ?? "") &&
+      this.markup.includes('data-clamp="{{ category.line_limit }}"') &&
       [nameRule, examplesRule].every(
         (rule) =>
           /display:\s*inline/.test(rule ?? "") &&
@@ -787,7 +776,6 @@ describe("Liquid layout contract", () => {
     const halfHorizontal = new CompactLayoutDriver("half_horizontal");
 
     expect(halfHorizontal.hasWholeLineCategoryRows()).toBe(true);
-    expect(halfHorizontal.hasCategoryLineBudgetMarkup()).toBe(true);
     expect(halfHorizontal.hasCategorySeparators()).toBe(false);
     expect(halfHorizontal.hasLeftAlignedCategoryRows()).toBe(true);
   });
